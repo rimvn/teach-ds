@@ -3,6 +3,7 @@ import { store } from '../core/Store.js';
 import { router } from '../core/Router.js';
 import { audioSynthesizer } from '../core/AudioSynthesizer.js';
 import { ipcDispatcher, IPC_EVENTS } from '../core/IPCDispatcher.js';
+import { slideEngineAdapter } from '../core/adapters/SlideEngineAdapter.js';
 
 export class LiveWorkspaceView extends BaseView {
   constructor() {
@@ -15,6 +16,7 @@ export class LiveWorkspaceView extends BaseView {
   onMount() {
     console.log('🖥️ TeachDS Live Workspace View Mounted');
     this.renderStudentsGrid();
+    slideEngineAdapter.renderCurrentSlide();
     this.bindEvents();
     this.bindIPCListeners();
 
@@ -53,7 +55,9 @@ export class LiveWorkspaceView extends BaseView {
     // Listen to IPC Slide Change Events
     const unbindSlide = ipcDispatcher.on(IPC_EVENTS.CHANGE_SLIDE, (payload) => {
       if (payload && payload.slideIndex) {
-        store.setSlideIndex(payload.slideIndex);
+        slideEngineAdapter.currentSlideIndex = payload.slideIndex;
+        slideEngineAdapter.currentAnimationStep = 0;
+        slideEngineAdapter.renderCurrentSlide();
       }
     });
 
@@ -62,15 +66,11 @@ export class LiveWorkspaceView extends BaseView {
 
   bindEvents() {
     document.getElementById('next-slide-btn')?.addEventListener('click', () => {
-      const { currentSlideIndex } = store.getState();
-      store.setSlideIndex(currentSlideIndex + 1);
-      ipcDispatcher.broadcastSlideChange(currentSlideIndex + 1);
+      slideEngineAdapter.nextStep();
     });
 
     document.getElementById('prev-slide-btn')?.addEventListener('click', () => {
-      const { currentSlideIndex } = store.getState();
-      store.setSlideIndex(currentSlideIndex - 1);
-      ipcDispatcher.broadcastSlideChange(currentSlideIndex - 1);
+      slideEngineAdapter.prevStep();
     });
 
     document.getElementById('end-lesson-btn')?.addEventListener('click', () => {

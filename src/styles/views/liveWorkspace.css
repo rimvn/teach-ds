@@ -88,13 +88,30 @@
   margin-bottom: 16px;
 }
 
-.slide-content ul {
-  font-size: 18px;
-  color: #cbd5e1;
-  padding-left: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.slide-anim-step {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.slide-anim-step.visible-step {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide-anim-step.hidden-step {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.black-screen-overlay {
+  background: #000000 !important;
+}
+
+.black-screen-overlay * {
+  opacity: 0 !important;
 }
 
 .tivi-footer {
@@ -135,15 +152,19 @@
 .toast-reason { font-size: 13px; opacity: 0.9; }
 
 .modal-overlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.85);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: 9999;
 }
-.modal-overlay.hidden { display: none; }
+.modal-overlay.hidden { display: none !important; }
 
 .wheel-box, .timer-box {
   padding: 32px;

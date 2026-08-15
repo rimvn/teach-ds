@@ -106,39 +106,7 @@
               </div>
             </div>
 
-            <div class="hero-lesson-card glass-card accent-glow">
-              <div class="status-pill pulse-green">
-                <span class="dot"></span> TIẾT HỌC SẮP ĐẾN GIỜ (BẮT ĐẦU TRONG 3 PHÚT)
-              </div>
-
-              <div class="lesson-details">
-                <div class="lesson-meta">
-                  <span class="meta-tag blue">Thứ 3 — Tiết 2</span>
-                  <span class="meta-tag purple">Môn: Ngữ Văn 10</span>
-                  <span class="meta-tag green">Lớp: 10A2 (Phòng 302)</span>
-                  <span class="meta-tag orange">42 Học sinh</span>
-                </div>
-                <h1 class="lesson-title">Bài 12: Phân Tích Nhân Vật Văn Học (Tác Phẩm "Lặng Lẽ Sa Pa")</h1>
-                <p class="lesson-desc">Kế hoạch 5512: Khám phá kiến thức & Tương tác nhóm 4 hoạt động</p>
-
-                <div class="lesson-resources-summary">
-                  <span class="res-badge"><span class="icon">📊</span> Slide PPTX (20 trang)</span>
-                  <span class="res-badge"><span class="icon">🎥</span> Video clip minh họa (3:20 min)</span>
-                  <span class="res-badge"><span class="icon">🎡</span> Vòng quay may mắn 42 HS</span>
-                  <span class="res-badge check"><span class="icon">✔</span> Đã tải Offline sẵn sàng</span>
-                </div>
-              </div>
-
-              <div class="launch-action">
-                <button class="btn-launch-giant" id="start-lesson-btn">
-                  <span class="rocket">🚀</span>
-                  <div class="btn-text">
-                    <span class="main-label">BẮT ĐẦU DẠY TIẾT HỌC 1-CLICK</span>
-                    <span class="sub-label">Mở màn hình trình chiếu Tivi & Thanh trợ lý PC</span>
-                  </div>
-                </button>
-              </div>
-            </div>
+            <div id="hero-lesson-card-container"></div>
 
             <div class="upcoming-grid">
               <div class="section-title">
@@ -154,7 +122,10 @@
                   </div>
                   <h4>Bài 8: Ôn Tập Ngữ Pháp & Rèn Kỹ Năng Diễn Đạt</h4>
                   <p>Gói tài nguyên: 15 Slide PPTX + Quizizz</p>
-                  <button class="btn-secondary btn-sm start-specific-lesson">Bắt đầu tiết 11B1</button>
+                  <div class="mini-card-actions">
+                    <button class="btn-secondary btn-sm btn-preview-script" data-class="11B1">📖 Xem Kịch Bản 5512</button>
+                    <button class="btn-primary-glow btn-sm start-specific-lesson" data-class="11B1" data-early="true">🚀 Bắt Đầu Tiết</button>
+                  </div>
                 </div>
 
                 <div class="mini-lesson-card glass-card">
@@ -164,7 +135,27 @@
                   </div>
                   <h4>Bài 13: Thực Hành Viết Đoạn Văn Nghị Luận</h4>
                   <p>Gói tài nguyên: 12 Slide + SCORM Bài giảng</p>
-                  <button class="btn-secondary btn-sm start-specific-lesson">Bắt đầu tiết 10A5</button>
+                  <div class="mini-card-actions">
+                    <button class="btn-secondary btn-sm btn-preview-script" data-class="10A5">📖 Xem Kịch Bản 5512</button>
+                    <button class="btn-primary-glow btn-sm start-specific-lesson" data-class="10A5" data-early="true">🚀 Bắt Đầu Tiết</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODAL XÁC NHẬN BẮT ĐẦU SỚM (CHỐNG BẤM NHẦM KHÁC GIỜ DẠY) -->
+            <div class="modal-overlay hidden" id="early-launch-modal">
+              <div class="early-launch-box glass-card accent-gold">
+                <div class="modal-header">
+                  <h3>⚠️ XÁC NHẬN BẮT ĐẦU SỚM TIẾT HỌC</h3>
+                </div>
+                <div class="modal-body">
+                  <p>Tiết học <strong id="early-class-name">Lớp 11B1</strong> còn <strong id="early-mins-left">65 phút</strong> nữa mới đến giờ theo Thời khóa biểu.</p>
+                  <p class="hint-text">Bạn có chắc chắn muốn BẮT ĐẦU SỚM tiết học này trên Màn hình Tivi chiếu cho học sinh không?</p>
+                </div>
+                <div class="modal-actions">
+                  <button class="btn-primary" id="btn-confirm-early-launch">🚀 Đồng Ý Bắt Đầu Sớm</button>
+                  <button class="btn-secondary" id="btn-cancel-early-launch">❌ Hủy Bỏ</button>
                 </div>
               </div>
             </div>

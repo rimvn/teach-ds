@@ -8,6 +8,7 @@ import { router } from './core/Router.js';
 import { ipcDispatcher } from './core/IPCDispatcher.js';
 import { localFirstAdapter } from './core/adapters/LocalFirstAdapter.js';
 import { audioSynthesizer } from './core/AudioSynthesizer.js';
+import { slideEngineAdapter } from './core/adapters/SlideEngineAdapter.js';
 import { benchmarkTaxonomy, getSubjectsForGrade, getSchoolTypeLabel, getGradesForSchoolType } from './config/appConfig.js';
 
 // VIEW CONTROLLERS
@@ -60,11 +61,12 @@ class TeachDSApp {
   }
 
   bootstrap() {
-    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing, IPC Channel, LocalFirst DB, Hybrid Audio & GDPT 2018 Taxonomy!');
+    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing, IPC Channel, LocalFirst DB, Hybrid Audio, GDPT 2018 Taxonomy & Slide Engine 4K!');
     window.store = store;
     window.ipcDispatcher = ipcDispatcher;
     window.localFirstAdapter = localFirstAdapter;
     window.audioSynthesizer = audioSynthesizer;
+    window.slideEngineAdapter = slideEngineAdapter;
     window.getSubjectsForGrade = getSubjectsForGrade;
     window.getSchoolTypeLabel = getSchoolTypeLabel;
     window.getGradesForSchoolType = getGradesForSchoolType;
@@ -75,6 +77,7 @@ class TeachDSApp {
     localFirstAdapter.benchmarkStorage(10);
     audioSynthesizer.benchmarkAudio();
     benchmarkTaxonomy();
+    slideEngineAdapter.benchmarkSlideSwitching(10);
 
     router.bootstrapInitialRoute(store.getState().currentView);
   }
