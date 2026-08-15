@@ -60,10 +60,8 @@ export class LiveWorkspaceView extends BaseView {
       this.showRewardToast(studentName, stars, reason, avatar);
       audioSynthesizer.playChime();
 
-      // 2. Sync to Store if not already mutated
-      if (payload.syncStore !== false) {
-        store.rewardStudent(studentId, stars, reason);
-      }
+      // 2. Sync to Store across all connected windows
+      store.rewardStudent(studentId, stars, reason);
     });
 
     // Listen to IPC Slide Change Events across Multi-Tab & Multi-Window
@@ -234,8 +232,7 @@ export class LiveWorkspaceView extends BaseView {
             name: student.name,
             stars: 1,
             reason: 'Tương tác phát biểu',
-            avatar: student.avatar,
-            syncStore: false
+            avatar: student.avatar
           });
         }
       });

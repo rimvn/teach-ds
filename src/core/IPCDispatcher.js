@@ -18,15 +18,13 @@ class IPCDispatcher {
   constructor() {
     this.channelName = 'teachds_ipc_bus_channel';
     this.listeners = new Map();
+    this.processedEventIds = new Set();
     this.broadcastChannel = null;
     this.isElectron = typeof window !== 'undefined' && window.electronAPI !== undefined;
 
     this.initTransport();
   }
 
-  /**
-   * Initialize Multi-Transport IPC Layer (BroadcastChannel -> Electron IPC -> postMessage)
-   */
   /**
    * Initialize Multi-Transport IPC Layer (BroadcastChannel -> localStorage StorageBus -> Electron IPC -> postMessage)
    */
@@ -84,8 +82,10 @@ class IPCDispatcher {
    */
   send(eventType, payload = {}) {
     const startTime = performance.now();
+    const eventId = `ipc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const messageData = {
       __teachds_ipc: true,
+      eventId,
       eventType,
       payload,
       timestamp: Date.now(),
@@ -104,10 +104,7 @@ class IPCDispatcher {
     // 2. Send via Cross-Window Storage Event Bus (Guarantees Sync Across Separate Windows)
     if (typeof localStorage !== 'undefined') {
       try {
-        localStorage.setItem('teachds_ipc_bus_event', JSON.stringify({
-          ...messageData,
-          _nonce: Math.random() // Guarantees storage event fires every single call
-        }));
+        localStorage.setItem('teachds_ipc_bus_event', JSON.stringify(messageData));
       } catch (e) {
         console.warn('[IPCDispatcher] Storage Bus send error:', e);
       }
@@ -136,14 +133,27 @@ class IPCDispatcher {
    */
   handleIncomingMessage(messageData) {
     if (!messageData || typeof messageData !== 'object') return;
-    const { eventType, payload, timestamp } = messageData;
+    const { eventType, payload, timestamp, senderId, eventId } = messageData;
+
+    // 1. Ignore self-emitted IPC messages to prevent double execution on originating window
+    if (senderId && senderId === this.getSenderId()) return;
+
+    // 2. Deduplicate messages received via multiple transports (BroadcastChannel + localStorage bus)
+    if (eventId) {
+      if (this.processedEventIds.has(eventId)) return; // Already processed!
+      this.processedEventIds.add(eventId);
+      if (this.processedEventIds.size > 200) {
+        const firstKey = this.processedEventIds.values().next().value;
+        this.processedEventIds.delete(firstKey);
+      }
+    }
 
     if (!eventType || !this.listeners.has(eventType)) return;
 
     const callbacks = this.listeners.get(eventType);
     callbacks.forEach(callback => {
       try {
-        callback(payload, { timestamp, latencyMs: Date.now() - timestamp });
+        callback(payload, { timestamp, senderId, eventId, latencyMs: Date.now() - timestamp });
       } catch (err) {
         console.error(`[IPCDispatcher Error in listener '${eventType}']`, err);
       }
