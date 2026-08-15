@@ -27,6 +27,9 @@ class IPCDispatcher {
   /**
    * Initialize Multi-Transport IPC Layer (BroadcastChannel -> Electron IPC -> postMessage)
    */
+  /**
+   * Initialize Multi-Transport IPC Layer (BroadcastChannel -> localStorage StorageBus -> Electron IPC -> postMessage)
+   */
   initTransport() {
     // 1. Primary Transport: BroadcastChannel API (Modern Web Browsers & Vite Dev Mode)
     if (typeof BroadcastChannel !== 'undefined') {
@@ -41,7 +44,24 @@ class IPCDispatcher {
       }
     }
 
-    // 2. Secondary Transport: Electron IPC Bridge (Production Desktop App)
+    // 2. Cross-Window Storage Event Bus Fallback (Guarantees Sync Across Separate Browser Windows & Monitors)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'teachds_ipc_bus_event' && event.newValue) {
+          try {
+            const parsed = JSON.parse(event.newValue);
+            if (parsed && parsed.senderId !== this.getSenderId()) {
+              this.handleIncomingMessage(parsed);
+            }
+          } catch (e) {
+            console.warn('[IPCDispatcher] Storage Bus Parse Error:', e);
+          }
+        }
+      });
+      console.log('🌐 [IPCDispatcher] Initialized Cross-Window Storage Event Bus');
+    }
+
+    // 3. Secondary Transport: Electron IPC Bridge (Production Desktop App)
     if (this.isElectron && window.electronAPI && typeof window.electronAPI.onMessage === 'function') {
       window.electronAPI.onMessage((eventData) => {
         this.handleIncomingMessage(eventData);
@@ -49,7 +69,7 @@ class IPCDispatcher {
       console.log('🖥️ [IPCDispatcher] Initialized Electron IPC Bridge');
     }
 
-    // 3. Fallback Transport: Window postMessage / Opener Listener
+    // 4. Fallback Transport: Window postMessage / Opener Listener
     if (typeof window !== 'undefined') {
       window.addEventListener('message', (event) => {
         if (event.data && event.data.__teachds_ipc) {
@@ -57,25 +77,6 @@ class IPCDispatcher {
         }
       });
     }
-  }
-
-  /**
-   * Handle incoming IPC Message and dispatch to registered listeners
-   */
-  handleIncomingMessage(messageData) {
-    if (!messageData || typeof messageData !== 'object') return;
-    const { eventType, payload, timestamp } = messageData;
-
-    if (!eventType || !this.listeners.has(eventType)) return;
-
-    const callbacks = this.listeners.get(eventType);
-    callbacks.forEach(callback => {
-      try {
-        callback(payload, { timestamp, latencyMs: Date.now() - timestamp });
-      } catch (err) {
-        console.error(`[IPCDispatcher Error in listener '${eventType}']`, err);
-      }
-    });
   }
 
   /**
@@ -100,12 +101,24 @@ class IPCDispatcher {
       }
     }
 
-    // 2. Send via Electron IPC Bridge if available
+    // 2. Send via Cross-Window Storage Event Bus (Guarantees Sync Across Separate Windows)
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('teachds_ipc_bus_event', JSON.stringify({
+          ...messageData,
+          _nonce: Math.random() // Guarantees storage event fires every single call
+        }));
+      } catch (e) {
+        console.warn('[IPCDispatcher] Storage Bus send error:', e);
+      }
+    }
+
+    // 3. Send via Electron IPC Bridge if available
     if (this.isElectron && window.electronAPI && typeof window.electronAPI.sendMessage === 'function') {
       window.electronAPI.sendMessage(messageData);
     }
 
-    // 3. Fallback window.postMessage
+    // 4. Fallback window.postMessage
     if (typeof window !== 'undefined' && window.opener) {
       window.opener.postMessage({ __teachds_ipc: true, message: messageData }, '*');
     }
@@ -116,6 +129,25 @@ class IPCDispatcher {
     }
 
     return duration;
+  }
+
+  /**
+   * Handle incoming IPC Message and dispatch to registered listeners
+   */
+  handleIncomingMessage(messageData) {
+    if (!messageData || typeof messageData !== 'object') return;
+    const { eventType, payload, timestamp } = messageData;
+
+    if (!eventType || !this.listeners.has(eventType)) return;
+
+    const callbacks = this.listeners.get(eventType);
+    callbacks.forEach(callback => {
+      try {
+        callback(payload, { timestamp, latencyMs: Date.now() - timestamp });
+      } catch (err) {
+        console.error(`[IPCDispatcher Error in listener '${eventType}']`, err);
+      }
+    });
   }
 
   /**
@@ -157,6 +189,10 @@ class IPCDispatcher {
 
   broadcastTimerToggle(timerState) {
     return this.send(IPC_EVENTS.TOGGLE_TIMER, timerState);
+  }
+
+  broadcastAudioChime(chimeType = 'FOCUS_5_CHIMES') {
+    return this.send(IPC_EVENTS.AUDIO_CHIME, { chimeType });
   }
 
   getSenderId() {

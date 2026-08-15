@@ -77,7 +77,33 @@ export class LiveWorkspaceView extends BaseView {
       }
     });
 
-    this.unsubscribeIPC.push(unbindReward, unbindSlide);
+    // Listen to IPC Spin Wheel Events
+    const unbindWheel = ipcDispatcher.on(IPC_EVENTS.SPIN_WHEEL, (payload) => {
+      if (!payload) return;
+      if (payload.action === 'OPEN') this.openWheelModal(false);
+      else if (payload.action === 'SPIN') this.spinWheel(false);
+      else if (payload.action === 'CLOSE') document.getElementById('wheel-modal')?.classList.add('hidden');
+    });
+
+    // Listen to IPC Timer Events
+    const unbindTimer = ipcDispatcher.on(IPC_EVENTS.TOGGLE_TIMER, (payload) => {
+      if (!payload) return;
+      if (payload.action === 'OPEN') this.openTimerModal(false);
+      else if (payload.action === 'START') {
+        if (payload.secondsLeft) this.timerSecondsLeft = payload.secondsLeft;
+        this.startClassroomTimer(false);
+      } else if (payload.action === 'STOP') this.stopClassroomTimer(false);
+      else if (payload.action === 'CLOSE') document.getElementById('timer-modal')?.classList.add('hidden');
+    });
+
+    // Listen to IPC Focus Chime Events
+    const unbindChime = ipcDispatcher.on(IPC_EVENTS.AUDIO_CHIME, (payload) => {
+      if (payload && payload.chimeType === 'FOCUS_5_CHIMES') {
+        audioSynthesizer.playFocusChimeSequence(5);
+      }
+    });
+
+    this.unsubscribeIPC.push(unbindReward, unbindSlide, unbindWheel, unbindTimer, unbindChime);
   }
 
   bindEvents() {
@@ -106,35 +132,37 @@ export class LiveWorkspaceView extends BaseView {
       this.toggleTiviFullscreen();
     });
 
-    // CLASSROOM LIVE TOOLS HUB (TASK-SP2-04)
+    // CLASSROOM LIVE TOOLS HUB (TASK-SP2-04 & Multi-Window Sync)
     // 1. Spin Wheel Modal Triggers
     document.getElementById('btn-open-wheel')?.addEventListener('click', () => {
-      this.openWheelModal();
+      this.openWheelModal(true);
     });
 
     document.getElementById('spin-wheel-btn')?.addEventListener('click', () => {
-      this.spinWheel();
+      this.spinWheel(true);
     });
 
     document.getElementById('close-wheel-btn')?.addEventListener('click', () => {
       document.getElementById('wheel-modal')?.classList.add('hidden');
+      ipcDispatcher.broadcastWheelSpin({ action: 'CLOSE' });
     });
 
     // 2. Classroom Timer Modal Triggers
     document.getElementById('btn-open-timer')?.addEventListener('click', () => {
-      this.openTimerModal();
+      this.openTimerModal(true);
     });
 
     document.getElementById('start-timer-btn')?.addEventListener('click', () => {
-      this.startClassroomTimer();
+      this.startClassroomTimer(true);
     });
 
     document.getElementById('stop-timer-btn')?.addEventListener('click', () => {
-      this.stopClassroomTimer();
+      this.stopClassroomTimer(true);
     });
 
     document.getElementById('close-timer-btn')?.addEventListener('click', () => {
       document.getElementById('timer-modal')?.classList.add('hidden');
+      ipcDispatcher.broadcastTimerToggle({ action: 'CLOSE' });
     });
 
     document.getElementById('btn-close-timer-expired')?.addEventListener('click', () => {
@@ -169,6 +197,7 @@ export class LiveWorkspaceView extends BaseView {
     document.getElementById('btn-focus-chime')?.addEventListener('click', () => {
       console.log('🔔 [Teacher Dock] Playing 5 Consecutive Focus Attention Chimes...');
       audioSynthesizer.playFocusChimeSequence(5);
+      ipcDispatcher.broadcastAudioChime('FOCUS_5_CHIMES');
     });
   }
 
@@ -261,11 +290,14 @@ export class LiveWorkspaceView extends BaseView {
   /**
    * Spin Wheel HTML5 Canvas Engine (60fps Random Student Wheel)
    */
-  openWheelModal() {
+  openWheelModal(broadcast = true) {
     const modal = document.getElementById('wheel-modal');
     if (modal) {
       modal.classList.remove('hidden');
       this.drawWheel();
+    }
+    if (broadcast) {
+      ipcDispatcher.broadcastWheelSpin({ action: 'OPEN' });
     }
   }
 
@@ -388,17 +420,23 @@ export class LiveWorkspaceView extends BaseView {
   /**
    * Classroom Timer Engine
    */
-  openTimerModal() {
+  openTimerModal(broadcast = true) {
     const modal = document.getElementById('timer-modal');
     if (modal) {
       modal.classList.remove('hidden');
       this.updateTimerDisplay();
     }
+    if (broadcast) {
+      ipcDispatcher.broadcastTimerToggle({ action: 'OPEN' });
+    }
   }
 
-  startClassroomTimer() {
+  startClassroomTimer(broadcast = true) {
     if (this.classroomTimerInterval) clearInterval(this.classroomTimerInterval);
     audioSynthesizer.playChime();
+    if (broadcast) {
+      ipcDispatcher.broadcastTimerToggle({ action: 'START', secondsLeft: this.timerSecondsLeft });
+    }
 
     this.classroomTimerInterval = setInterval(() => {
       if (this.timerSecondsLeft > 0) {
@@ -415,10 +453,13 @@ export class LiveWorkspaceView extends BaseView {
     }, 1000);
   }
 
-  stopClassroomTimer() {
+  stopClassroomTimer(broadcast = true) {
     if (this.classroomTimerInterval) {
       clearInterval(this.classroomTimerInterval);
       this.classroomTimerInterval = null;
+    }
+    if (broadcast) {
+      ipcDispatcher.broadcastTimerToggle({ action: 'STOP' });
     }
   }
 
