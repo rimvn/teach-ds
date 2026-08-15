@@ -222,8 +222,8 @@
 }
 .modal-overlay.hidden { display: none !important; }
 
-/* Wheel Modal scoped inside Tivi Viewport */
-#wheel-modal {
+/* Wheel Modal & Timer Modal scoped inside Tivi Viewport */
+#wheel-modal, #timer-modal, .timer-expired-overlay {
   position: absolute !important;
   top: 0;
   left: 0;
@@ -232,6 +232,42 @@
   background: rgba(2, 6, 23, 0.92);
   backdrop-filter: blur(8px);
   z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-expired-overlay.hidden { display: none !important; }
+
+.custom-time-input {
+  width: 60px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-gold);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.expired-box {
+  padding: 36px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 60px rgba(245, 158, 11, 0.5);
+}
+
+.expired-icon { font-size: 52px; animation: ringBell 0.8s infinite alternate; }
+
+@keyframes ringBell {
+  0% { transform: rotate(-15deg); }
+  100% { transform: rotate(15deg); }
 }
 
 .wheel-box, .timer-box {
@@ -241,8 +277,8 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  max-width: 520px;
-  width: 90%;
+  max-width: 580px;
+  width: 95%;
   border: 1px solid rgba(139, 92, 246, 0.5);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 35px rgba(139, 92, 246, 0.4);
   z-index: 10000;

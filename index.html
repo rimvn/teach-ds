@@ -211,11 +211,16 @@
 
                 <div class="modal-overlay hidden" id="timer-modal">
                   <div class="timer-box glass-card accent-glow">
-                    <h3>⏱️ ĐỒNG HỒ ĐẾM NGƯỢC THẢO LUẬN NHÓM</h3>
-                    <div class="timer-presets" style="display: flex; gap: 10px; margin: 12px 0;">
+                    <h3>⏱️ ĐỒNG HỒ ĐẾM NGƯỢC LỚP HỌC</h3>
+                    <div class="timer-presets" style="display: flex; gap: 8px; align-items: center; justify-content: center; margin: 14px 0; white-space: nowrap;">
                       <button class="btn-sm btn-secondary btn-timer-preset" data-mins="1">1 Phút</button>
                       <button class="btn-sm btn-secondary btn-timer-preset" data-mins="3">3 Phút</button>
                       <button class="btn-sm btn-secondary btn-timer-preset" data-mins="5">5 Phút</button>
+                      <span style="font-size: 13px; color: var(--text-muted); margin-left: 4px;">Tùy chỉnh:</span>
+                      <input type="number" id="custom-timer-input" min="0" max="90" value="5" class="custom-time-input" />
+                      <span style="font-size: 12px; color: var(--text-muted);">ph</span>
+                      <input type="number" id="custom-timer-secs-input" min="0" max="59" value="0" class="custom-time-input" />
+                      <span style="font-size: 12px; color: var(--text-muted);">s</span>
                     </div>
                     <div class="timer-display" id="timer-display">05:00</div>
                     <div class="modal-actions">
@@ -223,6 +228,16 @@
                       <button class="btn-secondary" id="stop-timer-btn">⏸️ Tạm Dừng</button>
                       <button class="btn-secondary" id="close-timer-btn">❌ Đóng</button>
                     </div>
+                  </div>
+                </div>
+
+                <!-- TOAST HẾT GIỜ THẢO LUẬN (THAY THẾ BROWSER ALERT) -->
+                <div class="timer-expired-overlay hidden" id="timer-expired-toast">
+                  <div class="expired-box glass-card accent-gold">
+                    <div class="expired-icon">🔔</div>
+                    <h2 style="font-family: var(--font-heading); color: var(--accent-gold); font-size: 26px;">HẾT GIỜ LÀM BÀI / THẢO LUẬN!</h2>
+                    <p style="font-size: 16px; color: var(--text-muted);">Mời cả lớp dừng bút và chuẩn bị báo cáo kết quả.</p>
+                    <button class="btn-primary" id="btn-close-timer-expired" style="padding: 10px 24px; font-size: 15px;">✔ Đóng</button>
                   </div>
                 </div>
               </div>
@@ -266,7 +281,7 @@
                     <span class="icon">🎡</span> Vòng Quay Gọi Tên
                   </button>
                   <button class="btn-tool" id="btn-open-timer" style="flex: 1;">
-                    <span class="icon">⏱️</span> Đồng Hồ Thảo Luận
+                    <span class="icon">⏱️</span> Đồng Hồ Đếm Ngược
                   </button>
                   <button class="btn-tool" id="btn-focus-chime" title="Phát tiếng chuông báo tập trung nề nếp">
                     <span class="icon">🔔</span> Chuông Tập Trung

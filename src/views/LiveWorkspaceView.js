@@ -135,10 +135,29 @@ export class LiveWorkspaceView extends BaseView {
       document.getElementById('timer-modal')?.classList.add('hidden');
     });
 
+    document.getElementById('btn-close-timer-expired')?.addEventListener('click', () => {
+      document.getElementById('timer-expired-toast')?.classList.add('hidden');
+    });
+
+    // Custom Timer Manual Input (Phút & Giây)
+    const updateCustomTimer = () => {
+      const mins = Math.max(0, parseInt(document.getElementById('custom-timer-input')?.value || '0', 10));
+      const secs = Math.max(0, Math.min(59, parseInt(document.getElementById('custom-timer-secs-input')?.value || '0', 10)));
+      this.timerSecondsLeft = mins * 60 + secs;
+      this.updateTimerDisplay();
+    };
+
+    document.getElementById('custom-timer-input')?.addEventListener('input', updateCustomTimer);
+    document.getElementById('custom-timer-secs-input')?.addEventListener('input', updateCustomTimer);
+
     // Quick Timer Presets (1m, 3m, 5m)
     document.querySelectorAll('.btn-timer-preset').forEach(btn => {
       btn.addEventListener('click', () => {
         const mins = parseInt(btn.getAttribute('data-mins') || '5', 10);
+        const minsInput = document.getElementById('custom-timer-input');
+        const secsInput = document.getElementById('custom-timer-secs-input');
+        if (minsInput) minsInput.value = mins;
+        if (secsInput) secsInput.value = 0;
         this.timerSecondsLeft = mins * 60;
         this.updateTimerDisplay();
       });
@@ -386,8 +405,10 @@ export class LiveWorkspaceView extends BaseView {
       } else {
         clearInterval(this.classroomTimerInterval);
         this.classroomTimerInterval = null;
+        document.getElementById('timer-modal')?.classList.add('hidden');
         audioSynthesizer.playFanfare();
-        alert('⏱️ HẾT GIỜ THẢO LUẬN NHÓM!');
+        const expiredToast = document.getElementById('timer-expired-toast');
+        if (expiredToast) expiredToast.classList.remove('hidden');
       }
     }, 1000);
   }
