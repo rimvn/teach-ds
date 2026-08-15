@@ -8,6 +8,7 @@ import { router } from './core/Router.js';
 import { ipcDispatcher } from './core/IPCDispatcher.js';
 import { localFirstAdapter } from './core/adapters/LocalFirstAdapter.js';
 import { audioSynthesizer } from './core/AudioSynthesizer.js';
+import { audioRingWorker } from './core/audio/AudioRingWorker.js';
 import { slideEngineAdapter } from './core/adapters/SlideEngineAdapter.js';
 import { benchmarkTaxonomy, getSubjectsForGrade, getSchoolTypeLabel, getGradesForSchoolType } from './config/appConfig.js';
 
@@ -84,6 +85,7 @@ class TeachDSApp {
     window.ipcDispatcher = ipcDispatcher;
     window.localFirstAdapter = localFirstAdapter;
     window.audioSynthesizer = audioSynthesizer;
+    window.audioRingWorker = audioRingWorker;
     window.slideEngineAdapter = slideEngineAdapter;
     window.getSubjectsForGrade = getSubjectsForGrade;
     window.getSchoolTypeLabel = getSchoolTypeLabel;
@@ -94,6 +96,7 @@ class TeachDSApp {
     ipcDispatcher.benchmarkLatency(10);
     localFirstAdapter.benchmarkStorage(10);
     audioSynthesizer.benchmarkAudio();
+    audioRingWorker.benchmarkAudioRingWorker(10);
     benchmarkTaxonomy();
     slideEngineAdapter.benchmarkSlideSwitching(10);
 

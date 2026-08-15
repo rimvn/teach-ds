@@ -55,12 +55,18 @@ gantt
 ---
 
 ## 🔵 SPRINT 3: TRỢ LÝ AI LẮNG NGHE & BẢNG CHỐT 60S (TUẦN 5 - TUẦN 6)
-> **Mục tiêu Sprint 3:** Hoàn thiện tính năng AI lắng nghe thầm lặng trên bục giảng và Bảng chốt tiết AI 60s.
+> **Mục tiêu Sprint 3:** Hoàn thiện tính năng AI lắng nghe thầm lặng trên bục giảng, Động cơ On-Device Speech-to-Text (0$ Cloud Cost, 100% Offline) và Bảng chốt tiết AI 60s.
+> 
+> 💡 **Kiến trúc On-Device Speech-to-Text Zero Cloud Cost:**
+> - **Triết lý:** 100% Offline, 0$ Chi phí API hàng tháng, bảo mật tuyệt đối dữ liệu giọng nói lớp học.
+> - **macOS Desktop Build (`.dmg`):** Tận dụng Apple Native Speech Framework (`SFSpeechRecognizer`) & Apple Silicon Neural Engine (M1/M2/M3/M4) độ trễ `< 20ms`.
+> - **Windows Desktop Build (`.exe`):** Tận dụng `Windows.Media.SpeechRecognition` & Whisper.cpp (Model 39MB Nén Siêu Nhẹ chạy trên GPU/CPU Onboard).
+> - **Web Browser Environment:** Tận dụng W3C `Web Speech API (webkitSpeechRecognition)` với `lang: 'vi-VN'`.
 
 | Task ID | Tên Task Phân Rã Chi Tiết | Story Points | File / Component | Mô Tả Kỹ Thuật & DoD Nghiệm Thu |
 | :---: | :--- | :---: | :--- | :--- |
-| **TASK-SP3-01** | AudioWorklet Ring Buffer 3s Worker | 5 SP | `src/core/audio/AudioRingWorker.js` | AudioWorklet thu Micro ngầm. Lưu bộ đệm xoay vòng 3s. Sample rate 16000Hz. **DoD:** CPU ngốn `< 15%`, RAM `< 350MB`. |
-| **TASK-SP3-02** | Keyword Spotting (KWS) Pedagogy Engine | 5 SP | `src/core/audio/AudioAiProcessor.js` | Nhận diện từ khóa sư phạm ("Khen em...", "Mời em..."). Trích xuất file WAV 3s. **DoD:** Nhận diện đúng từ khóa và tạo file WAV. |
+| **TASK-SP3-01** | AudioWorklet Ring Buffer 3s Worker | 5 SP | `src/core/audio/AudioRingWorker.js` | AudioWorklet thu Micro ngầm. Lưu bộ đệm xoay vòng 3s. Sample rate 16000Hz. **DoD:** CPU ngốn `< 5%`, RAM `< 15MB`. |
+| **TASK-SP3-02** | Keyword Spotting (KWS) Pedagogy Engine | 5 SP | `src/core/audio/AudioAiProcessor.js` | Nhận diện từ khóa sư phạm On-Device ("Khen em...", "Mời em..."). Trích xuất file WAV 3s. **DoD:** Nhận diện đúng từ khóa và tạo file WAV. |
 | **TASK-SP3-03** | Bảng Chốt Tiết AI Confirm Board | 3 SP | `src/views/PostClassView.js` | Render danh sách thẻ nháp AI đề xuất điểm sao và tiêu chí khen thưởng. **DoD:** Bấm xác nhận ➔ Tích điểm và kích hoạt pháo hoa. |
 | **TASK-SP3-04** | 3s Audio Context Replay Player | 2 SP | `src/components/AudioReplayDrawer.js` | Player phát lại file WAV 3s âm thanh bối cảnh gốc qua loa. **DoD:** Bấm nút `[🔊 Play 3s]` ➔ Loa phát tiếng trong `< 50ms`. |
 
