@@ -6,14 +6,15 @@
 
 export class AudioRingWorker {
   constructor(sampleRate = 16000, bufferDurationSecs = 3) {
-    this.sampleRate = sampleRate;
     this.bufferDurationSecs = bufferDurationSecs;
-    this.bufferSize = this.sampleRate * this.bufferDurationSecs; // 48,000 samples for 3 seconds
+    this.sampleRate = sampleRate;
+    this.bufferSize = this.sampleRate * this.bufferDurationSecs;
     this.ringBuffer = new Float32Array(this.bufferSize);
     this.writePointer = 0;
     this.audioContext = null;
     this.mediaStream = null;
     this.processorNode = null;
+    this.silentGain = null;
     this.isRecording = false;
     this.liveVolume = 0;
   }
@@ -22,38 +23,55 @@ export class AudioRingWorker {
    * Start Micro Recording & Continuous 3s Ring Buffer Logging
    */
   async startRecording() {
-    if (this.isRecording) return true;
+    if (this.isRecording && this.audioContext && this.audioContext.state === 'running') {
+      return true;
+    }
 
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.audioContext = new AudioCtx({ sampleRate: this.sampleRate });
+      this.audioContext = new AudioCtx();
+
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
+      // Sync sample rate to hardware AudioContext (e.g. 44100Hz or 48000Hz)
+      this.sampleRate = this.audioContext.sampleRate || 16000;
+      this.bufferSize = this.sampleRate * this.bufferDurationSecs;
+      this.ringBuffer = new Float32Array(this.bufferSize);
+      this.writePointer = 0;
 
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
-          sampleRate: this.sampleRate,
           echoCancellation: true,
-          noiseSuppression: true
+          noiseSuppression: true,
+          autoGainControl: true
         }
       });
 
       const sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
 
-      // Create ScriptProcessorNode as universal fallback for WebAudio PCM extraction
-      this.processorNode = this.audioContext.createScriptProcessor(2048, 1, 1);
+      // ScriptProcessorNode for real-time PCM extraction
+      this.processorNode = this.audioContext.createScriptProcessor(4096, 1, 1);
       this.processorNode.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
         this.writeToBuffer(inputData);
       };
 
+      // Mute live mic feedback to speakers to prevent audio echo, while keeping Onaudioprocess active
+      this.silentGain = this.audioContext.createGain();
+      this.silentGain.gain.value = 0;
+
       sourceNode.connect(this.processorNode);
-      this.processorNode.connect(this.audioContext.destination);
+      this.processorNode.connect(this.silentGain);
+      this.silentGain.connect(this.audioContext.destination);
 
       this.isRecording = true;
       console.log(`🎙️ [AudioRingWorker] Started 3s Ring Buffer Microphone capture at ${this.sampleRate}Hz (Size: ${this.bufferSize} samples)`);
       return true;
     } catch (err) {
-      console.warn('⚠️ [AudioRingWorker] Microphone access or AudioContext initialization warning:', err.message);
+      console.warn('⚠️ [AudioRingWorker] Microphone access or AudioContext error:', err);
       this.isRecording = false;
       return false;
     }
@@ -71,7 +89,7 @@ export class AudioRingWorker {
       sumSq += val * val;
     }
     // Calculate RMS Volume Level (0.0 to 1.0)
-    this.liveVolume = Math.min(1, Math.sqrt(sumSq / samples.length) * 4);
+    this.liveVolume = Math.min(1, Math.sqrt(sumSq / samples.length) * 5);
   }
 
   /**
@@ -139,6 +157,10 @@ export class AudioRingWorker {
     if (this.processorNode) {
       this.processorNode.disconnect();
       this.processorNode = null;
+    }
+    if (this.silentGain) {
+      this.silentGain.disconnect();
+      this.silentGain = null;
     }
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
