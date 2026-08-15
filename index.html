@@ -202,13 +202,18 @@
                 </div>
 
                 <div class="modal-overlay hidden" id="timer-modal">
-                  <div class="timer-box glass-card">
+                  <div class="timer-box glass-card accent-glow">
                     <h3>⏱️ ĐỒNG HỒ ĐẾM NGƯỢC THẢO LUẬN NHÓM</h3>
-                    <div class="timer-display" id="timer-display">03:00</div>
+                    <div class="timer-presets" style="display: flex; gap: 10px; margin: 12px 0;">
+                      <button class="btn-sm btn-secondary btn-timer-preset" data-mins="1">1 Phút</button>
+                      <button class="btn-sm btn-secondary btn-timer-preset" data-mins="3">3 Phút</button>
+                      <button class="btn-sm btn-secondary btn-timer-preset" data-mins="5">5 Phút</button>
+                    </div>
+                    <div class="timer-display" id="timer-display">05:00</div>
                     <div class="modal-actions">
-                      <button class="btn-primary" id="start-timer-btn">Bắt Đầu</button>
-                      <button class="btn-secondary" id="reset-timer-btn">Reset (3 min)</button>
-                      <button class="btn-secondary" id="close-timer-btn">Đóng</button>
+                      <button class="btn-primary" id="start-timer-btn">🚀 Bắt Đầu Đếm</button>
+                      <button class="btn-secondary" id="stop-timer-btn">⏸️ Tạm Dừng</button>
+                      <button class="btn-secondary" id="close-timer-btn">❌ Đóng</button>
                     </div>
                   </div>
                 </div>
@@ -224,16 +229,17 @@
               <div class="dock-header">
                 <div class="teacher-badge">🎛️ THANH TRỢ LÝ GIẢNG DẠY (Riêng tư Giáo viên)</div>
                 <button class="btn-danger-glow" id="end-lesson-btn">
-                  <span class="icon">🛑</span> KẾT THÚC TIẾT HỌC (60s CHỐT)
+                  <span class="icon">🏁</span> KẾT THÚC TIẾT HỌC
                 </button>
               </div>
 
               <div class="dock-section">
-                <h4>📖 Điều Khiển Slide Bài Giảng</h4>
-                <div class="slide-controls">
-                  <button class="btn-secondary" id="prev-slide-btn">◄ Slide Trước</button>
-                  <span class="slide-indicator">Slide <strong id="dock-slide-num">5</strong> / 20</span>
-                  <button class="btn-primary" id="next-slide-btn">Slide Tiếp ►</button>
+                <h4>📖 Điều Khiển Trình Chiếu & An Toàn</h4>
+                <div class="slide-controls" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn-secondary btn-sm" id="prev-slide-btn">◄ Slide Trước</button>
+                  <span class="slide-indicator" style="align-self: center;">Slide <strong id="dock-slide-num">5</strong> / 20</span>
+                  <button class="btn-primary btn-sm" id="next-slide-btn">Slide Tiếp ►</button>
+                  <button class="btn-secondary btn-sm" id="btn-black-screen" title="Tắt đen màn hình Tivi">⬛ Black Screen</button>
                 </div>
               </div>
 
@@ -246,13 +252,16 @@
               </div>
 
               <div class="dock-section">
-                <h4>🎡 Công Cụ Tương Tác Nhanh</h4>
-                <div class="tool-buttons">
-                  <button class="btn-tool" id="trigger-wheel-btn">
+                <h4>🎡 Công Cụ Sư Phạm Tương Tác 1-Touch</h4>
+                <div class="tool-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn-tool" id="btn-open-wheel" style="flex: 1;">
                     <span class="icon">🎡</span> Vòng Quay Gọi Tên
                   </button>
-                  <button class="btn-tool" id="trigger-timer-btn">
-                    <span class="icon">⏱️</span> Đồng Hồ 3 Phút
+                  <button class="btn-tool" id="btn-open-timer" style="flex: 1;">
+                    <span class="icon">⏱️</span> Đồng Hồ Thảo Luận
+                  </button>
+                  <button class="btn-tool" id="btn-focus-chime" title="Phát tiếng chuông báo tập trung nề nếp">
+                    <span class="icon">🔔</span> Chuông Tập Trung
                   </button>
                 </div>
               </div>
