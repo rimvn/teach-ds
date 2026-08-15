@@ -175,6 +175,17 @@ class AudioSynthesizer {
   }
 
   // Fallback Oscillator Generators
+  /**
+   * Play Focus Chime Sequence (Plays 5 consecutive attention beeps)
+   */
+  playFocusChimeSequence(count = 5) {
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        this.playWarning();
+      }, i * 220);
+    }
+  }
+
   synthesizeChime() {
     if (!this.audioContext) return;
     const now = this.audioContext.currentTime;

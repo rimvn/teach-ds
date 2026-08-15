@@ -163,10 +163,10 @@ export class LiveWorkspaceView extends BaseView {
       });
     });
 
-    // 3. Focus Chime Button Trigger
+    // 3. Focus Chime Button Trigger (Plays 5 consecutive attention beeps)
     document.getElementById('btn-focus-chime')?.addEventListener('click', () => {
-      console.log('🔔 [Teacher Dock] Playing Focus Attention Chime...');
-      audioSynthesizer.playWarning();
+      console.log('🔔 [Teacher Dock] Playing 5 Consecutive Focus Attention Chimes...');
+      audioSynthesizer.playFocusChimeSequence(5);
     });
   }
 
