@@ -5,8 +5,8 @@
  */
 
 export class AudioRingWorker {
-  constructor(sampleRate = 16000, bufferDurationSecs = 3) {
-    this.bufferDurationSecs = bufferDurationSecs;
+  constructor(sampleRate = 16000, bufferDurationSecs = 10) {
+    this.bufferDurationSecs = bufferDurationSecs; // 10s audio context
     this.sampleRate = sampleRate;
     this.bufferSize = this.sampleRate * this.bufferDurationSecs;
     this.ringBuffer = new Float32Array(this.bufferSize);

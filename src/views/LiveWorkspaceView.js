@@ -32,6 +32,14 @@ export class LiveWorkspaceView extends BaseView {
     this.bindIPCListeners();
     this.initSpinWheelCanvas();
 
+    // Auto-start Real-Time On-Device AI Speech Listening & 3s Ring Buffer
+    audioAiProcessor.startListening();
+
+    // Listen to real-time AI Draft Card detections and log to UI
+    this.unsubscribeAi = audioAiProcessor.onDraftDetected((draft) => {
+      this.appendAiLiveLog(draft);
+    });
+
     // Subscribe to Store Reactive Updates (DoD Task-SP1-01)
     this.unsubscribeStore = store.subscribe(state => {
       this.updateSlideDisplay(state.currentSlideIndex);
@@ -40,10 +48,23 @@ export class LiveWorkspaceView extends BaseView {
   }
 
   onUnmount() {
+    audioAiProcessor.stopListening();
+    if (this.unsubscribeAi) this.unsubscribeAi();
     if (this.unsubscribeStore) this.unsubscribeStore();
     this.unsubscribeIPC.forEach(unbind => unbind());
     this.unsubscribeIPC = [];
     if (this.classroomTimerInterval) clearInterval(this.classroomTimerInterval);
+  }
+
+  appendAiLiveLog(draft) {
+    const logContainer = document.getElementById('ai-live-log');
+    if (!logContainer) return;
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    item.style.color = '#34d399';
+    item.style.fontWeight = '700';
+    item.innerHTML = `⏱️ ${draft.timestamp} — AI Khen: "${draft.studentName} (+${draft.stars}⭐ ${draft.reason})"`;
+    logContainer.prepend(item);
   }
 
   bindIPCListeners() {

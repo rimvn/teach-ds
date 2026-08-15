@@ -10,6 +10,7 @@ import { localFirstAdapter } from './core/adapters/LocalFirstAdapter.js';
 import { audioSynthesizer } from './core/AudioSynthesizer.js';
 import { audioRingWorker } from './core/audio/AudioRingWorker.js';
 import { audioAiProcessor } from './core/audio/AudioAiProcessor.js';
+import { audioReplayDrawer } from './components/AudioReplayDrawer.js';
 import { slideEngineAdapter } from './core/adapters/SlideEngineAdapter.js';
 import { benchmarkTaxonomy, getSubjectsForGrade, getSchoolTypeLabel, getGradesForSchoolType } from './config/appConfig.js';
 
@@ -88,6 +89,7 @@ class TeachDSApp {
     window.audioSynthesizer = audioSynthesizer;
     window.audioRingWorker = audioRingWorker;
     window.audioAiProcessor = audioAiProcessor;
+    window.audioReplayDrawer = audioReplayDrawer;
     window.slideEngineAdapter = slideEngineAdapter;
     window.getSubjectsForGrade = getSubjectsForGrade;
     window.getSchoolTypeLabel = getSchoolTypeLabel;
@@ -100,6 +102,7 @@ class TeachDSApp {
     audioSynthesizer.benchmarkAudio();
     audioRingWorker.benchmarkAudioRingWorker(10);
     audioAiProcessor.benchmarkAudioAiProcessor(10);
+    audioReplayDrawer.benchmarkAudioReplayDrawer(10);
     benchmarkTaxonomy();
     slideEngineAdapter.benchmarkSlideSwitching(10);
 

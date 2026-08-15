@@ -50,14 +50,18 @@ export class AudioAiProcessor {
     try {
       this.recognition = new SpeechClass();
       this.recognition.continuous = true;
-      this.recognition.interimResults = true;
+      this.recognition.interimResults = false; // Only emit clean final sentences, avoiding interim duplicate streaming!
       this.recognition.lang = 'vi-VN';
+
+      this.recognition.onstart = () => {
+        console.log('🎙️ [SpeechRecognition] Microphone STT Engine ACTIVE & Listening...');
+      };
 
       this.recognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            console.log(`🎙️ [AI STT On-Device] Final Transcript: "${transcript}"`);
+            const transcript = event.results[i][0].transcript;
+            console.log(`🗣️ [AI STT Live Mic Final] Speech Detected: "${transcript}"`);
             this.processTranscript(transcript);
           }
         }
@@ -109,36 +113,63 @@ export class AudioAiProcessor {
   processTranscript(transcript) {
     if (!transcript || typeof transcript !== 'string') return null;
 
-    const lower = transcript.toLowerCase();
+    const lower = transcript.toLowerCase().trim();
+    const now = Date.now();
+
+    // Prevent duplicate processing of the same spoken phrase within 4 seconds
+    if (this.lastProcessedText === lower && (now - this.lastProcessedTime) < 4000) {
+      return null;
+    }
+
     const { students } = store.getState();
 
-    // 1. KWS Pedagogy Keyword Patterns
-    const praiseKeywords = ['khen', 'thưởng', 'tốt', 'xuất sắc', 'trôi chảy', 'tự tin', 'chính xác', 'đúng ý'];
+    // 1. Broad KWS Pedagogy Triggers (Tăng độ phủ nhận diện câu khen tự nhiên của giáo viên)
+    const praiseKeywords = ['khen', 'thưởng', 'cộng', 'được', 'xuất sắc', 'giỏi', 'đúng', 'tốt', 'tự tin', 'trôi chảy', 'chính xác', 'đúng ý', 'sao'];
     const hasPraise = praiseKeywords.some(kw => lower.includes(kw));
 
     if (!hasPraise) return null;
 
-    // 2. Extract Matching Student Name from Roster
+    this.lastProcessedText = lower;
+    this.lastProcessedTime = now;
+
+    // 2. Extract Matching Student Name from Roster (Hỗ trợ tìm tên đầy đủ, tên riêng hoặc tên bất kỳ cô gọi)
     let matchedStudent = students.find(s => lower.includes(s.name.toLowerCase()));
     if (!matchedStudent) {
-      // Partial first name / last name fallback match
+      // Partial name match across words
       matchedStudent = students.find(s => {
         const parts = s.name.toLowerCase().split(' ');
-        const lastName = parts[parts.length - 1];
-        return parts.length > 1 && lower.includes(lastName) && lastName.length > 2;
+        return parts.some(p => p.length > 2 && lower.includes(p));
       });
     }
 
-    const studentName = matchedStudent ? matchedStudent.name : 'Nguyễn Văn An';
-    const studentId = matchedStudent ? matchedStudent.id : '1';
+    let studentName = matchedStudent ? matchedStudent.name : 'Nguyễn Văn An';
+    let studentId = matchedStudent ? matchedStudent.id : '1';
 
-    // 3. Extract Reason & Stars
+    // Nếu cô gọi tên 1 em chưa có trong danh sách demo (ví dụ "bạn Giang", "em Khang")
+    const nameMatch = lower.match(/(em|bạn|học sinh)\s+([A-ZÀ-Ỹa-zà-ỹ]+)/i);
+    if (!matchedStudent && nameMatch && nameMatch[2]) {
+      const capName = nameMatch[2].charAt(0).toUpperCase() + nameMatch[2].slice(1);
+      studentName = `Em ${capName} (Phát biểu)`;
+    }
+
+    // Debounce by student ID: same student cannot receive duplicate AI draft card within 6 seconds
+    const lastPraiseTime = this.studentPraiseTimers ? (this.studentPraiseTimers.get(studentId) || 0) : 0;
+    if (now - lastPraiseTime < 6000) {
+      console.log(`⏳ [AI KWS Engine] Ignored duplicate praise card for '${studentName}' within 6s debounce window`);
+      return null;
+    }
+
+    if (!this.studentPraiseTimers) this.studentPraiseTimers = new Map();
+    this.studentPraiseTimers.set(studentId, now);
+
+    // 3. Flexible Star & Pedagogy Reason Extraction
     let stars = 1;
-    if (lower.includes('2 sao') || lower.includes('hai sao')) stars = 2;
-    if (lower.includes('3 sao') || lower.includes('ba sao')) stars = 3;
+    if (lower.includes('2 sao') || lower.includes('hai sao') || lower.includes('+2') || lower.includes('cộng 2')) stars = 2;
+    if (lower.includes('3 sao') || lower.includes('ba sao') || lower.includes('+3') || lower.includes('cộng 3')) stars = 3;
 
-    let reason = 'Diễn đạt trôi chảy & Tự tin';
-    if (lower.includes('đúng ý') || lower.includes('chính xác')) reason = 'Trả lời chính xác & Đúng ý';
+    let reason = 'Tương tác phát biểu bài tích cực';
+    if (lower.includes('trôi chảy') || lower.includes('tự tin')) reason = 'Diễn đạt trôi chảy & Tự tin';
+    if (lower.includes('đúng') || lower.includes('chính xác')) reason = 'Trả lời chính xác & Đúng bài';
     if (lower.includes('sáng tạo') || lower.includes('hay')) reason = 'Ý tưởng sáng tạo & Độc đáo';
 
     // 4. Capture 3-Second Audio Context WAV Blob from AudioRingWorker
