@@ -2,36 +2,75 @@ import { BaseView } from './BaseView.js';
 import { store } from '../core/Store.js';
 import { router } from '../core/Router.js';
 import { audioSynthesizer } from '../core/AudioSynthesizer.js';
+import { ipcDispatcher, IPC_EVENTS } from '../core/IPCDispatcher.js';
 
 export class LiveWorkspaceView extends BaseView {
   constructor() {
     super('live-workspace');
-    this.unsubscribe = null;
+    this.unsubscribeStore = null;
+    this.unsubscribeIPC = [];
+    this.toastTimer = null;
   }
 
   onMount() {
     console.log('🖥️ TeachDS Live Workspace View Mounted');
     this.renderStudentsGrid();
     this.bindEvents();
+    this.bindIPCListeners();
 
-    this.unsubscribe = store.subscribe(state => {
+    // Subscribe to Store Reactive Updates (DoD Task-SP1-01)
+    this.unsubscribeStore = store.subscribe(state => {
       this.updateSlideDisplay(state.currentSlideIndex);
+      this.renderStudentsGrid();
     });
   }
 
   onUnmount() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribeStore) this.unsubscribeStore();
+    this.unsubscribeIPC.forEach(unbind => unbind());
+    this.unsubscribeIPC = [];
+  }
+
+  bindIPCListeners() {
+    // Listen to IPC Reward Events across Windows/Tabs (DoD Task-SP1-02)
+    const unbindReward = ipcDispatcher.on(IPC_EVENTS.REWARD_STUDENT, (payload) => {
+      console.log('⚡ [IPC Receiver] Reward Event:', payload);
+      const studentName = payload.name || payload.studentName || 'Nguyễn Văn An';
+      const stars = payload.stars || 1;
+      const reason = payload.reason || 'Phát biểu xuất sắc';
+      const studentId = payload.studentId || payload.id || '1';
+
+      // 1. Nổi Toast hạt sáng trên Tivi & Phát tiếng "Ting-Ting"
+      this.showRewardToast(studentName, stars, reason);
+      audioSynthesizer.playChime();
+
+      // 2. Tự động đồng bộ cộng sao vào Store nếu chưa cộng
+      if (payload.syncStore !== false) {
+        store.rewardStudent(studentId, stars, reason);
+      }
+    });
+
+    // Listen to IPC Slide Change Events
+    const unbindSlide = ipcDispatcher.on(IPC_EVENTS.CHANGE_SLIDE, (payload) => {
+      if (payload && payload.slideIndex) {
+        store.setSlideIndex(payload.slideIndex);
+      }
+    });
+
+    this.unsubscribeIPC.push(unbindReward, unbindSlide);
   }
 
   bindEvents() {
     document.getElementById('next-slide-btn')?.addEventListener('click', () => {
       const { currentSlideIndex } = store.getState();
       store.setSlideIndex(currentSlideIndex + 1);
+      ipcDispatcher.broadcastSlideChange(currentSlideIndex + 1);
     });
 
     document.getElementById('prev-slide-btn')?.addEventListener('click', () => {
       const { currentSlideIndex } = store.getState();
       store.setSlideIndex(currentSlideIndex - 1);
+      ipcDispatcher.broadcastSlideChange(currentSlideIndex - 1);
     });
 
     document.getElementById('end-lesson-btn')?.addEventListener('click', () => {
@@ -56,11 +95,37 @@ export class LiveWorkspaceView extends BaseView {
     grid.querySelectorAll('.student-touch-card').forEach(card => {
       card.addEventListener('click', () => {
         const id = card.getAttribute('data-id');
-        store.rewardStudent(id, 1);
-        audioSynthesizer.playChime();
-        this.renderStudentsGrid();
+        const student = students.find(s => s.id === id);
+        
+        // 1. Mutate Store
+        store.rewardStudent(id, 1, 'Khen thưởng 1-Touch');
+        
+        // 2. Broadcast over IPC Channel to Tivi View
+        if (student) {
+          ipcDispatcher.broadcastReward({ name: student.name, stars: 1, reason: 'Tương tác hăng hái' });
+        }
       });
     });
+  }
+
+  showRewardToast(studentName, stars = 1, reason = 'Phát biểu xuất sắc') {
+    const toast = document.getElementById('reward-toast');
+    const toastStudent = document.getElementById('toast-student');
+    const toastTitle = document.getElementById('toast-title');
+    const toastReason = document.getElementById('toast-reason');
+
+    if (!toast) return;
+
+    if (toastStudent) toastStudent.textContent = `Em ${studentName}`;
+    if (toastTitle) toastTitle.textContent = `+${stars} ⭐ Khen Thưởng!`;
+    if (toastReason) toastReason.textContent = reason || 'Diễn đạt trôi chảy & Tự tin!';
+
+    toast.classList.remove('hidden');
+
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 2800);
   }
 
   updateSlideDisplay(index) {
