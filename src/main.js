@@ -29,6 +29,7 @@ import { SettingsProView } from './views/SettingsProView.js';
 import { HomeroomAnalyticsView } from './views/HomeroomAnalyticsView.js';
 import { HomeroomFundView } from './views/HomeroomFundView.js';
 import { HomeroomTT22View } from './views/HomeroomTT22View.js';
+import { StudentProfileView } from './views/StudentProfileView.js';
 
 class TeachDSApp {
   constructor() {
@@ -47,6 +48,7 @@ class TeachDSApp {
     router.registerRoute('capsule-editor', new CapsuleEditorView());
     router.registerRoute('resource-bank', new ResourceBankView());
     router.registerRoute('class-roster', new ClassRosterView());
+    router.registerRoute('student-profile', new StudentProfileView());
     router.registerRoute('weekly-reports', new WeeklyReportsView());
     router.registerRoute('settings-pro', new SettingsProView());
     router.registerRoute('homeroom-analytics', new HomeroomAnalyticsView());

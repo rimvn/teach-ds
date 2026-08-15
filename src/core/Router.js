@@ -31,8 +31,9 @@ class Router {
   }
 
   getRouteFromHash() {
-    const hash = window.location.hash.replace(/^#\/?/, '');
-    return hash || null;
+    const raw = window.location.hash.replace(/^#\/?/, '');
+    const cleanRoute = raw.split('?')[0];
+    return cleanRoute || null;
   }
 
   navigateTo(viewName, updateHash = true) {

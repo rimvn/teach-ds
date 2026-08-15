@@ -11,13 +11,14 @@ export const STORAGE_STORES = {
   HOMEROOM_RISK: 'homeroom_risk',
   FUND_LEDGER: 'fund_ledger',
   TT22_CONDUCT: 'tt22_conduct',
-  SYNC_QUEUE: 'sync_queue'
+  SYNC_QUEUE: 'sync_queue',
+  SETTINGS: 'settings'
 };
 
 class LocalFirstAdapter {
   constructor() {
     this.dbName = 'TeachDS_Offline_DB_v1';
-    this.dbVersion = 1;
+    this.dbVersion = 2;
     this.db = null;
     this.isReady = false;
     this.initPromise = this.init();
@@ -91,6 +92,11 @@ class LocalFirstAdapter {
         if (!db.objectStoreNames.contains(STORAGE_STORES.SYNC_QUEUE)) {
           const store = db.createObjectStore(STORAGE_STORES.SYNC_QUEUE, { keyPath: 'id', autoIncrement: true });
           store.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+
+        // 8. System & Seating Settings Store
+        if (!db.objectStoreNames.contains(STORAGE_STORES.SETTINGS)) {
+          db.createObjectStore(STORAGE_STORES.SETTINGS, { keyPath: 'id' });
         }
       };
     });
