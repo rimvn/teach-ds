@@ -584,29 +584,44 @@
 
         <section id="view-capsule-editor" class="view-section">
           <div class="capsule-editor-container glass-card">
-            <div class="capsule-header">
+            <div class="capsule-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
                 <h2>📂 BIÊN SOẠN GÓI TIẾT DẠY & GIÁO ÁN 5512</h2>
-                <p>Đóng gói tài nguyên Slide, Video, Quizizz và soạn Kế hoạch bài dạy chuẩn Bộ GD&ĐT</p>
+                <p>Đóng gói tài nguyên Slide, Video và Kế hoạch bài dạy chuẩn Bộ GD&ĐT</p>
               </div>
-              <button class="btn-primary" id="save-capsule-btn">💾 Lưu Gói Tài Nguyên & Cache Offline</button>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-secondary" id="btn-delete-capsule" style="color: var(--accent-red);">🗑️ Xóa Tiết</button>
+                <button class="btn-secondary" id="btn-start-lesson-hero" style="color: var(--accent-green); border-color: var(--accent-green); font-weight: 700;">🚀 Bắt Đầu Dạy Tiết Này</button>
+                <button class="btn-primary" id="save-capsule-btn">💾 Lưu Gói Tài Nguyên & Cache Offline</button>
+              </div>
+            </div>
+
+            <div class="capsule-picker-bar glass-card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple);">
+              <label style="font-weight: 700; color: #c084fc; white-space: nowrap;">📁 Chọn Gói Tiết Dạy Cần Biên Soạn:</label>
+              <select class="form-control" id="select-capsule-picker" style="flex: 1; background: rgba(0,0,0,0.5); color: white; border-color: var(--accent-purple); font-weight: 700;">
+                <option value="capsule_10a2_van10" selected>Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa) — Lớp 10A2</option>
+                <option value="new_capsule">+ ➕ Tạo Gói Tiết Dạy Mới...</option>
+              </select>
+              <button class="btn-secondary btn-sm" id="btn-new-capsule" style="white-space: nowrap;">+ Tạo Tiết Mới</button>
             </div>
 
             <div class="capsule-meta-form grid-3-cols">
               <div class="form-group">
                 <label>Chọn Lớp Học & Môn:</label>
-                <select class="form-control">
+                <select class="form-control" id="capsule-class-select">
                   <option value="10A2" selected>Lớp 10A2 — Ngữ Văn 10</option>
+                  <option value="10A5">Lớp 10A5 — Ngữ Văn 10</option>
                   <option value="11B1">Lớp 11B1 — Ngữ Văn 11</option>
+                  <option value="12A1">Lớp 12A1 — Ngữ Văn 12</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Tên Tiết / Tên Bài Dạy:</label>
-                <input type="text" class="form-control" value="Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)" />
+                <input type="text" class="form-control" id="capsule-title-input" value="Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)" />
               </div>
               <div class="form-group">
                 <label>Tiết Theo TKB:</label>
-                <input type="text" class="form-control" value="Thứ 3 — Tiết 2 (07:50 - 08:35)" />
+                <input type="text" class="form-control" id="capsule-slot-input" value="Thứ 3 — Tiết 2 (07:50 - 08:35)" />
               </div>
             </div>
 
@@ -632,7 +647,12 @@
             </div>
 
             <div class="editor-5512-section">
-              <h4>📑 Kế Hoạch Bài Dạy Chuẩn 5512 (4 Hoạt Động Bắt Buộc)</h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="margin: 0;">📑 Kế Hoạch Bài Dạy Chuẩn 5512 (4 Hoạt Động Bắt Buộc)</h4>
+                <button class="btn-secondary btn-sm" id="btn-ai-template-5512" style="background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: #c084fc; font-size: 12px; font-weight: 700;">
+                  ✨ AI Gợi Ý Mẫu 5512 Chuẩn
+                </button>
+              </div>
               <div class="tabs-5512">
                 <button class="tab-5512 active" data-act="1">1. Mở Đầu / Khởi Động (5 min)</button>
                 <button class="tab-5512" data-act="2">2. Hình Thành Kiến Thức (20 min)</button>
@@ -651,23 +671,74 @@
 
         <section id="view-resource-bank" class="view-section">
           <div class="resource-bank-container glass-card">
-            <div class="bank-header">
+            <div class="bank-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
               <div>
-                <h2>📚 KHO BÀI GIẢNG & NGÂN HÀNG TÀI NGUYÊN CỦA TÔI</h2>
-                <p>Lưu trữ, phân loại và tái sử dụng các Slide, Đề thi, Kế hoạch 5512 qua các năm học</p>
+                <h2>📚 TRẠM QUẢN LÝ SOẠN GIÁO ÁN & KHO BÀI GIẢNG DẠY HỌC</h2>
+                <p>Nơi thầy cô làm việc tại nhà: Soạn bài, review giáo án tiết sắp đến, phân loại môn học & khối lớp</p>
               </div>
-              <div class="search-box-flex">
-                <input type="text" class="form-control search-input" placeholder="🔍 Tìm kiếm slide, bài giảng, đề thi..." />
-                <button class="btn-primary">+ Thêm Thư Mục Mới</button>
+              <button class="btn-primary-glow" id="btn-create-new-plan-hero" style="padding: 10px 20px; font-weight: 700;">
+                + ➕ Soạn Kế Hoạch 5512 Mới
+              </button>
+            </div>
+
+            <!-- SECTION 1: GIÁO ÁN TIẾT SẮP ĐẾN (QUICK REVIEW BEFORE CLASS) -->
+            <div class="upcoming-hero-card glass-card" style="padding: 20px; margin-bottom: 24px; background: rgba(139, 92, 246, 0.15); border: 1.5px solid var(--accent-purple); border-radius: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800;">
+                  🔴 TIẾT SẮP ĐẾN GIỜ (DẠY TIẾP THEO)
+                </span>
+                <span style="color: var(--accent-gold); font-weight: 700; font-size: 13px;">⏱️ Thứ 3 — Tiết 2 (07:50 - 08:35) — Phòng 204</span>
+              </div>
+              <h3 style="margin: 0 0 8px 0; color: white; font-size: 18px;">
+                📖 Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa) — Môn Ngữ Văn 10
+              </h3>
+              <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px 0;">
+                🏫 <strong>Áp dụng giảng dạy các lớp:</strong> Lớp 10A2 (Đến giờ) • Lớp 10A5 (Thứ 2) • Lớp 10A8 (Thứ 6)
+              </p>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn-primary" id="btn-hero-review-plan">👁️ Review Nhanh Bài Trước Khi Vào Tiết</button>
+                <button class="btn-secondary" id="btn-hero-edit-plan">✏️ Tiếp Tục Biên Soạn Giáo Án 5512</button>
               </div>
             </div>
 
-            <div class="bank-folders-grid">
-              <div class="folder-card glass-card">
-                <div class="f-icon">📁</div>
-                <div class="f-name">Kho Slide Ngữ Văn 10 (GDPT 2018)</div>
-                <div class="f-meta">48 Files • Cập nhật 2 ngày trước</div>
+            <!-- SECTION 2: PHẠM VI GIẢNG DẠY CỦA THẦY CÔ (CURRICULUM SCOPE SELECTOR) -->
+            <div class="curriculum-scope-bar glass-card" style="padding: 16px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--accent-purple); border-radius: 12px;">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <label style="font-weight: 800; color: #c084fc; font-size: 14px; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                  🎯 PHẠM VI GIẢNG DẠY CỦA TÔI:
+                </label>
+                
+                <!-- Scope Select (Subject + Grade) -->
+                <select class="form-control" id="scope-subject-grade" style="width: auto; min-width: 220px; background: rgba(0,0,0,0.5); color: white; border-color: var(--accent-purple); font-weight: 700;">
+                  <option value="VAN_10" selected>📖 Môn Ngữ Văn — Khối 10</option>
+                  <option value="TOAN_10">📐 Môn Toán Học — Khối 10</option>
+                  <option value="ANH_11">🇬🇧 Môn Tiếng Anh — Khối 11</option>
+                  <option value="SU_11">🏛️ Môn Lịch Sử — Khối 11</option>
+                  <option value="LY_12">⚡ Môn Vật Lý — Khối 12</option>
+                </select>
+
+                <!-- Semester Select -->
+                <select class="form-control" id="scope-semester" style="width: auto; min-width: 150px; background: rgba(0,0,0,0.5); color: white; font-weight: 700;">
+                  <option value="HK1" selected>🗓️ Học Kỳ I (2026)</option>
+                  <option value="HK2">🗓️ Học Kỳ II (2027)</option>
+                </select>
+
+                <!-- Status Filter -->
+                <select class="form-control" id="filter-status" style="width: auto; min-width: 160px; background: rgba(0,0,0,0.5); color: white;">
+                  <option value="ACTIVE" selected>🟢 Đang Hoạt Động</option>
+                  <option value="ARCHIVED">⚪ Đã Lưu Trữ Kho Cũ</option>
+                  <option value="ALL">🌐 Tất Cả Trạng Thái</option>
+                </select>
               </div>
+
+              <div class="progress-badge" style="font-size: 13px; color: var(--accent-gold); font-weight: 700;">
+                📊 <strong>Tiến độ hoàn thiện:</strong> 8 / 10 Bài (80%)
+              </div>
+            </div>
+
+            <!-- SECTION 3: DANH SÁCH BỘ BÀI GIẢNG THEO CHƯƠNG & BÀI (CHAPTER & LESSON BINDER) -->
+            <div class="chapter-binder-wrapper" id="chapter-binder-wrapper">
+              <!-- Dynamic Chapters & Lesson Plans Render Here -->
             </div>
           </div>
         </section>
@@ -1029,6 +1100,21 @@
         </section>
 
       </main>
+    </div>
+  </div>
+
+  <!-- REUSABLE GLASSMORPHISM ARCHIVE CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="archive-confirm-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="glass-card accent-purple modal-box" style="max-width: 480px; width: 90%; padding: 28px; text-align: center; border: 1.5px solid var(--accent-purple); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); background: #0f172a;">
+      <div style="font-size: 44px; margin-bottom: 12px;">📦</div>
+      <h3 id="archive-modal-title" style="margin: 0 0 12px 0; color: white; font-size: 18px; font-weight: 800;">Xác Nhận Lưu Trữ Giáo Án</h3>
+      <p id="archive-modal-desc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+        Bạn có chắc chắn muốn chuyển giáo án vào Kho Lưu Trữ cũ không?
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button class="btn-secondary" id="btn-cancel-archive-modal" style="flex: 1; padding: 10px; border-radius: 8px;">✖ Hủy Bỏ</button>
+        <button class="btn-primary-glow" id="btn-confirm-archive-modal" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700;">✔ Đồng Ý Xử Lý</button>
+      </div>
     </div>
   </div>
 

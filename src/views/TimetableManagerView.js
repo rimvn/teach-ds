@@ -7,26 +7,41 @@
 import { BaseView } from './BaseView.js';
 import { router } from '../core/Router.js';
 import { audioSynthesizer } from '../core/AudioSynthesizer.js';
-import { localFirstAdapter } from '../core/adapters/LocalFirstAdapter.js';
+import { localFirstAdapter, STORAGE_STORES } from '../core/adapters/LocalFirstAdapter.js';
 
 export class TimetableManagerView extends BaseView {
   constructor() {
     super('timetable');
-    this.timetableData = [
-      { day: 2, slot: 2, className: 'Lớp 10A5', subject: 'Ngữ Văn 10', color: 'green' },
-      { day: 3, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue', isNext: true },
-      { day: 6, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue' }
+    this.timetableSlots = [
+      { day: 2, slot: 2, className: 'Lớp 10A5', subject: 'Ngữ Văn 10', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)' },
+      { day: 3, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)', isNext: true },
+      { day: 6, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)' }
     ];
   }
 
-  onMount() {
-    console.log('📅 [TimetableManagerView] Mounted AI OCR Timetable Manager (TASK-SP4-04)');
+  async onMount() {
+    console.log('📅 [TimetableManagerView] Mounted AI OCR Timetable Manager with Linked 5512 Capsules (TASK-SP4-04)');
+    await this.loadTimetableData();
     this.bindEvents();
   }
 
+  async loadTimetableData() {
+    try {
+      const saved = await localFirstAdapter.get(STORAGE_STORES.LESSONS, 'timetable_scanned_v1');
+      if (saved && saved.slots) {
+        this.timetableSlots = saved.slots;
+      }
+    } catch (e) {}
+  }
+
   bindEvents() {
-    document.getElementById('timetable-start-hero')?.addEventListener('click', () => {
-      router.navigateTo('live-workspace');
+    // Connect all timetable slots to launch the pre-prepared lesson plan directly!
+    document.querySelectorAll('.btn-slot-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        audioSynthesizer.playChime();
+        console.log('🚀 [TimetableManagerView] Launching pre-prepared Lesson Plan directly into Live Workspace...');
+        router.navigateTo('live-workspace');
+      });
     });
 
     const ocrBtn = document.getElementById('ocr-scan-btn');
@@ -72,16 +87,16 @@ export class TimetableManagerView extends BaseView {
     await new Promise(r => setTimeout(r, 180));
 
     const scannedSlots = [
-      { day: 2, slot: 1, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue' },
-      { day: 2, slot: 2, className: 'Lớp 10A5', subject: 'Ngữ Văn 10', color: 'green' },
-      { day: 3, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue', isNext: true },
-      { day: 4, slot: 3, className: 'Lớp 11B1', subject: 'Ngữ Văn 11', color: 'purple' },
-      { day: 5, slot: 4, className: 'Lớp 12A1', subject: 'Ngữ Văn 12', color: 'gold' },
-      { day: 6, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue' }
+      { day: 2, slot: 1, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học' },
+      { day: 2, slot: 2, className: 'Lớp 10A5', subject: 'Ngữ Văn 10', color: 'green', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học' },
+      { day: 3, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue', isNext: true, linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học' },
+      { day: 4, slot: 3, className: 'Lớp 11B1', subject: 'Ngữ Văn 11', color: 'purple', linkedCapsuleTitle: 'Bài 15: Tây Âu Thời Phong Kiến' },
+      { day: 5, slot: 4, className: 'Lớp 12A1', subject: 'Ngữ Văn 12', color: 'gold', linkedCapsuleTitle: 'Bài 8: Ôn Tập Văn Học Hiện Đại' },
+      { day: 6, slot: 2, className: 'Lớp 10A2', subject: 'Ngữ Văn 10', color: 'blue', linkedCapsuleTitle: 'Bài 12: Phân Tích Nhân Vật Văn Học' }
     ];
 
-    this.timetableData = scannedSlots;
-    await localFirstAdapter.put('lessons', {
+    this.timetableSlots = scannedSlots;
+    await localFirstAdapter.put(STORAGE_STORES.LESSONS, {
       id: 'timetable_scanned_v1',
       slots: scannedSlots,
       scannedAt: new Date().toISOString()

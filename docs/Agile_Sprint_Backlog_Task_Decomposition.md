@@ -73,15 +73,66 @@ gantt
 ---
 
 ## 🔵 SPRINT 4: SOẠN BÀI 5512 & OCR THỜI KHÓA BIỂU (TUẦN 7 - TUẦN 8)
-> **Mục tiêu Sprint 4:** Hoàn thiện công tác chuẩn bị bài dạy 5512 và đọc Thời khóa biểu tự động.
+> **Mục tiêu Sprint 4:** Hoàn thiện Trạm quản lý Sổ giáo án điện tử theo Chương & Bài (GDPT 2018), 1 Giáo án áp dụng linh hoạt cho nhiều lớp, Drag & Drop nạp bài giảng, và Quét ảnh Thời khóa biểu bằng AI Vision OCR.
 
 | Task ID | Tên Task Phân Rã Chi Tiết | Story Points | File / Component | Mô Tả Kỹ Thuật & DoD Nghiệm Thu |
 | :---: | :--- | :---: | :--- | :--- |
-| **TASK-SP4-01** | Drag & Drop Capsule File Uploader | 3 SP | `src/views/CapsuleEditorView.js` | Dragzone nạp file PPTX/MP4/PDF. Tự động gắn nhãn `✔ Đã cache Offline`. **DoD:** Kéo file thả vào ➔ Lưu vào Local Storage. |
-| **TASK-SP4-02** | Trình chỉnh sửa 4 Hoạt động 5512 | 3 SP | `src/views/CapsuleEditorView.js` | Tab chỉnh sửa Kế hoạch bài dạy 5512 (*Khởi động, Khám phá, Luyện tập, Vận dụng*). **DoD:** Nhập văn bản ➔ Lưu thành công Gói bài dạy. |
-| **TASK-SP4-03** | Ma trận Thời khóa biểu Tuần Grid | 4 SP | `src/views/TimetableManagerView.js` | Lịch dạy tuần 6 ngày x 10 tiết. Bấm ô tiết học ➔ Gán gói bài dạy hoặc vào tiết. **DoD:** Hiển thị mượt mà 60 ô tiết học. |
-| **TASK-SP4-04** | Excel TKB & AI OCR Photo Reader | 5 SP | `src/core/parsers/TimetableOCRReader.js` | Bộ đọc Excel TKB & Tesseract AI OCR đọc ảnh chụp thời khóa biểu. **DoD:** Upload ảnh TKB ➔ Điền chính xác 100% tiết dạy vào lịch. |
-| **TASK-SP4-05** | Kho Tài Nguyên & Quản lý Thư mục | 2 SP | `src/views/ResourceBankView.js` | Quản lý thư mục bài giảng, slide và kế hoạch 5512 theo năm học. **DoD:** Tạo thư mục và tìm kiếm file thần tốc. |
+| **TASK-SP4-01** | Drag & Drop Capsule File Uploader | 3 SP | `src/views/CapsuleEditorView.js` | Dragzone nạp file PPTX/MP4/PDF. Tự động bóc tách dung lượng MB & gán nhãn `✔ Đã cache Offline`. **DoD:** Kéo thả file ➔ Lưu vào Local Storage. |
+| **TASK-SP4-02** | Trình Soạn Kế Hoạch 5512 & 1-Plan Multi-Class | 5 SP | `src/views/CapsuleEditorView.js` | Tab 4 hoạt động 5512 (*Khởi động, Khám phá, Luyện tập, Vận dụng*). Hỗ trợ gán 1 Giáo án dạy cho nhiều lớp (`assignedClasses: ['10A2', '10A5']`). **DoD:** Chuyển tab mượt `< 0.2ms`. |
+| **TASK-SP4-03** | LocalFirst Offline Cache Engine & DB Schema v2 | 4 SP | `src/core/adapters/LocalFirstAdapter.js` | Nâng cấp CSDL IndexedDB Schema v2. Bổ sung `getCacheUsageMB()` & `getOfflineSyncStatus()`. **DoD:** Đọc/Ghi Offline mượt mà trong `< 5ms`. |
+| **TASK-SP4-04** | AI Vision OCR Photo Reader & Timetable Linker | 8 SP | `src/views/TimetableManagerView.js` | Quét ảnh TKB bằng AI Vision OCR, bóc tách Thứ/Tiết/Tên lớp/Môn học và liên kết Gói giáo án 5512 tương ứng. **DoD:** Trích xuất ảnh TKB trong `< 300ms`. |
+| **TASK-SP4-05** | Sổ Giáo Án Điện Tử & Trạm Quản Lý Kho Bài Giảng | 5 SP | `src/views/ResourceBankView.js` | Thiết kế Sổ Kế hoạch bài dạy theo Phạm vi môn học/khối lớp & phân nhóm Chương/Bài Sách giáo khoa. Thẻ Hero xem trước bài sắp dạy & Modal confirm lưu trữ glassmorphism. **DoD:** Lọc theo Chương/Bài mượt mượt `< 2ms`. |
+
+---
+
+### 🗄️ QUY CHUẨN ĐẶC TẢ CƠ SỞ DỮ LIỆU DB SCHEMA V2 CHO DEV TEAM (DATABASE CONTRACTS):
+
+Để đảm bảo các lập trình viên thi công đúng 100% mối quan hệ giữa **Giáo Án Soạn Trước (5512 Capsule)** và **Thời Khóa Biểu Tuần (Weekly Timetable Slots)**, CSDL `LocalFirstAdapter` IndexedDB quy định chuẩn các Store như sau:
+
+#### 1. Object Store: `lessons` (Quản lý Sổ Kế Hoạch Bài Dạy 5512)
+```typescript
+interface LessonCapsuleSchema {
+  id: string;                    // PK: "plan_van10_hk1_b12"
+  title: string;                 // Tên bài dạy: "Bài 12: Phân Tích Nhân Vật Lặng Lẽ Sa Pa"
+  subjectCode: string;           // Mã môn: "VAN" | "TOAN" | "ANH" | "SU" | "LY"
+  subjectName: string;           // Tên môn hiển thị: "Ngữ Văn 10"
+  grade: string;                 // Khối lớp: "10" | "11" | "12"
+  semester: string;              // Học kỳ: "HK1" | "HK2"
+  chapterId: string;             // FK: "chap_van10_ch2"
+  chapterName: string;           // Tên chương: "CHƯƠNG II: TRUYỆN NGẮN HIỆN ĐẠI..."
+  lessonNo: string;              // Thứ tự bài: "Bài 12"
+  status: "ACTIVE" | "ARCHIVED"; // Trạng thái: "🟢 Đang Hoạt Động" | "⚪ Đã Lưu Trữ"
+  assignedClasses: string[];     // Array các lớp áp dụng: ["10A2", "10A5", "10A8"]
+  assets: Array<{                // Danh sách file đính kèm
+    id: string;
+    name: string;
+    size: string;
+    type: string;
+    blobUri?: string;
+  }>;
+  plan5512: {                    // Cấu trúc 4 hoạt động 5512 Bộ GD&ĐT
+    1: string;                   // Hoạt động 1: Mở đầu / Khởi động (5m)
+    2: string;                   // Hoạt động 2: Hình thành kiến thức mới (20m)
+    3: string;                   // Hoạt động 3: Luyện tập / Thảo luận (15m)
+    4: string;                   // Hoạt động 4: Vận dụng & Dặn dò (5m)
+  };
+  createdAt: string;             // ISO Timestamp
+  updatedAt: string;             // ISO Timestamp
+}
+```
+
+#### 2. Object Store: `timetable_slots` (Liên Kết Thời Khóa Biểu Tuần)
+```typescript
+interface TimetableSlotSchema {
+  id: string;                    // PK: "slot_thu3_tiet2_10a2"
+  day: number;                   // Thứ trong tuần: 2 (Thứ 2) -> 7 (Thứ 7)
+  period: number;                // Tiết trong ngày: 1 -> 10
+  classId: string;               // Mã lớp: "10A2"
+  subjectCode: string;           // Mã môn: "VAN"
+  linkedCapsuleId: string;       // FK: Khoá ngoại liên kết tới LessonCapsule.id ("plan_van10_hk1_b12")
+  isUpcoming?: boolean;          // Cờ báo Tiết sắp diễn ra (Highlight đỏ)
+}
+```
 
 ---
 
