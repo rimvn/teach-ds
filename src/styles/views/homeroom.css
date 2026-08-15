@@ -19,6 +19,39 @@
 
 .view-header-bar h2 { font-family: var(--font-heading); font-size: 22px; color: var(--accent-purple); }
 
+.homeroom-subnav-bar {
+  display: flex;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.btn-subnav {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-subnav:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-subnav.active {
+  background: var(--accent-purple);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+}
+
 /* SCREEN 7.3: ANALYTICS & RISK RADAR */
 .analytics-grid-layout {
   display: grid;
@@ -85,23 +118,60 @@
   border-radius: var(--radius-md);
 }
 
+.accent-red { border-color: rgba(239, 68, 68, 0.5) !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.25) !important; }
+.accent-gold { border-color: rgba(245, 158, 11, 0.5) !important; box-shadow: 0 0 25px rgba(245, 158, 11, 0.25) !important; }
+
+.avatar-mini {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+}
+
+.time-filter select, .form-control {
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
 .radar-criterion {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
-.bar-fill {
-  height: 8px;
-  border-radius: 4px;
+.radar-criterion span {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--text-main);
 }
-.bar-fill.green { background: var(--accent-green); }
-.bar-fill.blue { background: var(--accent-blue); }
-.bar-fill.purple { background: var(--accent-purple); }
-.bar-fill.orange { background: var(--accent-gold); }
-.bar-fill.gold { background: #eab308; }
+
+.bar-fill {
+  height: 10px;
+  border-radius: 5px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bar-fill.green { background: var(--accent-green); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+.bar-fill.blue { background: var(--accent-blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+.bar-fill.purple { background: var(--accent-purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+.bar-fill.orange { background: var(--accent-gold); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.bar-fill.gold { background: #eab308; box-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
 
 /* SCREEN 7.4: CLASS FUND */
 .fund-grid-layout {

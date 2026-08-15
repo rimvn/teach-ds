@@ -189,3 +189,9 @@
   align-items: center;
   gap: 16px;
 }
+
+.main-container {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}

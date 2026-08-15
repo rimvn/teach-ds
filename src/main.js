@@ -47,10 +47,10 @@ class TeachDSApp {
   }
 
   bindNavigation() {
-    document.querySelectorAll('.nav-tab').forEach(tab => {
+    document.querySelectorAll('.nav-tab, .btn-subnav').forEach(tab => {
       tab.addEventListener('click', () => {
         const view = tab.getAttribute('data-view');
-        router.navigateTo(view);
+        if (view) router.navigateTo(view);
       });
     });
   }
