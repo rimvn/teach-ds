@@ -53,6 +53,7 @@ Dự án được xây dựng dựa trên bộ 14 tài liệu đặc tả kỹ t
 11. 📄 [Huong_Dan_Lap_Trinh_Chi_Tiet_A_Z.md](./docs/Huong_Dan_Lap_Trinh_Chi_Tiet_A_Z.md) — *Hướng dẫn nối ghép mã nguồn line-by-line & Build production.*
 12. 📄 [Agile_Sprint_Backlog_Task_Decomposition.md](./docs/Agile_Sprint_Backlog_Task_Decomposition.md) — *39 Agile Tasks phân rã theo 8 Sprints.*
 13. 📄 [Kien_Truc_K12_NamHoc_MonHoc_TruongHoc.md](./docs/Kien_Truc_K12_NamHoc_MonHoc_TruongHoc.md) — *Môn GDPT 2018 Cấp 1-2-3, Chuyển giao Năm học & Trường Liên Cấp.*
+14. 📄 [So_Do_Database_Event_Bus_Closed_Loop_DataFlow.md](./docs/So_Do_Database_Event_Bus_Closed_Loop_DataFlow.md) — *[Senior Lead Architecture] Sơ đồ ERD Database, Event-Driven Bus & 4 Vòng tròn dữ liệu khép kín.*
 
 ---
 
