@@ -128,11 +128,12 @@ export class SlideEngineAdapter {
       this.currentSlideIndex++;
       this.currentAnimationStep = 0;
       store.setSlideIndex(this.currentSlideIndex);
-      ipcDispatcher.broadcastSlideChange(this.currentSlideIndex);
       this.preRenderRAMCache(this.currentSlideIndex);
     }
 
     this.renderCurrentSlide();
+    ipcDispatcher.broadcastSlideChange(this.currentSlideIndex, this.currentAnimationStep, this.isBlackScreen);
+
     const duration = performance.now() - startTime;
     if (duration > 50.0) {
       console.warn(`⚠️ [SlideEngine Perf Warning] Slide switch took ${duration.toFixed(2)}ms (> 50ms DoD)`);
@@ -152,11 +153,11 @@ export class SlideEngineAdapter {
       const prevSlide = this.getSlideData(this.currentSlideIndex);
       this.currentAnimationStep = prevSlide && prevSlide.steps ? prevSlide.steps.length : 0;
       store.setSlideIndex(this.currentSlideIndex);
-      ipcDispatcher.broadcastSlideChange(this.currentSlideIndex);
       this.preRenderRAMCache(this.currentSlideIndex);
     }
 
     this.renderCurrentSlide();
+    ipcDispatcher.broadcastSlideChange(this.currentSlideIndex, this.currentAnimationStep, this.isBlackScreen);
   }
 
   /**
@@ -164,6 +165,11 @@ export class SlideEngineAdapter {
    */
   toggleBlackScreen() {
     this.isBlackScreen = !this.isBlackScreen;
+    this.applyBlackScreenState();
+    ipcDispatcher.broadcastSlideChange(this.currentSlideIndex, this.currentAnimationStep, this.isBlackScreen);
+  }
+
+  applyBlackScreenState() {
     const viewport = document.getElementById('slide-viewport');
     if (viewport) {
       if (this.isBlackScreen) {

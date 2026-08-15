@@ -66,12 +66,14 @@ export class LiveWorkspaceView extends BaseView {
       }
     });
 
-    // Listen to IPC Slide Change Events
+    // Listen to IPC Slide Change Events across Multi-Tab & Multi-Window
     const unbindSlide = ipcDispatcher.on(IPC_EVENTS.CHANGE_SLIDE, (payload) => {
       if (payload && payload.slideIndex) {
         slideEngineAdapter.currentSlideIndex = payload.slideIndex;
-        slideEngineAdapter.currentAnimationStep = 0;
+        slideEngineAdapter.currentAnimationStep = payload.animationStep !== undefined ? payload.animationStep : 0;
+        slideEngineAdapter.isBlackScreen = !!payload.isBlackScreen;
         slideEngineAdapter.renderCurrentSlide();
+        slideEngineAdapter.applyBlackScreenState();
       }
     });
 

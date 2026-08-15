@@ -147,8 +147,8 @@ class IPCDispatcher {
     return this.send(IPC_EVENTS.REWARD_STUDENT, studentData);
   }
 
-  broadcastSlideChange(slideIndex) {
-    return this.send(IPC_EVENTS.CHANGE_SLIDE, { slideIndex });
+  broadcastSlideChange(slideIndex, animationStep = 0, isBlackScreen = false) {
+    return this.send(IPC_EVENTS.CHANGE_SLIDE, { slideIndex, animationStep, isBlackScreen });
   }
 
   broadcastWheelSpin(winnerData) {
