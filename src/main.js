@@ -8,6 +8,7 @@ import { router } from './core/Router.js';
 import { ipcDispatcher } from './core/IPCDispatcher.js';
 import { localFirstAdapter } from './core/adapters/LocalFirstAdapter.js';
 import { audioSynthesizer } from './core/AudioSynthesizer.js';
+import { benchmarkTaxonomy, getSubjectsForGrade, getSchoolTypeLabel, getGradesForSchoolType } from './config/appConfig.js';
 
 // VIEW CONTROLLERS
 import { LaunchpadView } from './views/LaunchpadView.js';
@@ -59,16 +60,21 @@ class TeachDSApp {
   }
 
   bootstrap() {
-    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing, IPC Channel, LocalFirst DB & Hybrid Audio!');
+    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing, IPC Channel, LocalFirst DB, Hybrid Audio & GDPT 2018 Taxonomy!');
     window.store = store;
     window.ipcDispatcher = ipcDispatcher;
     window.localFirstAdapter = localFirstAdapter;
     window.audioSynthesizer = audioSynthesizer;
+    window.getSubjectsForGrade = getSubjectsForGrade;
+    window.getSchoolTypeLabel = getSchoolTypeLabel;
+    window.getGradesForSchoolType = getGradesForSchoolType;
+    window.benchmarkTaxonomy = benchmarkTaxonomy;
 
     store.benchmarkPerformance(10);
     ipcDispatcher.benchmarkLatency(10);
     localFirstAdapter.benchmarkStorage(10);
     audioSynthesizer.benchmarkAudio();
+    benchmarkTaxonomy();
 
     router.bootstrapInitialRoute(store.getState().currentView);
   }
