@@ -57,6 +57,8 @@ class TeachDSApp {
 
   bootstrap() {
     console.log('🚀 TeachDS Production Workspace initialized with Hash Routing!');
+    window.store = store;
+    store.benchmarkPerformance(10);
     router.bootstrapInitialRoute(store.getState().currentView);
   }
 }
