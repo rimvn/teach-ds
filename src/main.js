@@ -58,6 +58,24 @@ class TeachDSApp {
         if (view) router.navigateTo(view);
       });
     });
+
+    const handleOpenTiviWindow = () => {
+      const width = 1280;
+      const height = 720;
+      const left = window.screen.width ? Math.max(0, window.screen.width - width) : 50;
+      const top = 50;
+      const tiviWin = window.open(
+        `${window.location.origin}${window.location.pathname}#/live-workspace`,
+        'TeachDS_Tivi_Window',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no`
+      );
+      if (tiviWin) {
+        console.log('📺 Opened Tivi Child Window for multi-screen sync!');
+      }
+    };
+
+    document.getElementById('btn-open-tivi-window')?.addEventListener('click', handleOpenTiviWindow);
+    document.getElementById('dock-btn-open-tivi')?.addEventListener('click', handleOpenTiviWindow);
   }
 
   bootstrap() {

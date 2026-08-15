@@ -79,7 +79,8 @@
           <p>Giáo viên: Cô Nguyễn Thị Mai — Trường THPT Chu Văn An</p>
         </div>
 
-        <div class="header-controls">
+        <div class="header-controls" style="display: flex; gap: 12px; align-items: center;">
+          <button class="btn-primary-glow" id="btn-open-tivi-window" style="padding: 8px 16px; font-size: 13px;" title="Mở Cửa Sổ Pop-out Tivi 4K Chiếu Cho Học Sinh">📺 Mở Cửa Sổ Tivi Riêng</button>
           <button class="btn-icon-text" id="toggle-sound-btn" title="Bật/Tắt âm thanh">
             <span class="icon">🔊</span> <span id="sound-status-text">Âm thanh: Bật</span>
           </button>
@@ -249,11 +250,14 @@
             </div>
 
             <div class="teacher-dock-container glass-card">
-              <div class="dock-header">
+              <div class="dock-header" style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
                 <div class="teacher-badge">🎛️ THANH TRỢ LÝ GIẢNG DẠY (Riêng tư Giáo viên)</div>
-                <button class="btn-danger-glow" id="end-lesson-btn">
-                  <span class="icon">🏁</span> KẾT THÚC TIẾT HỌC
-                </button>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn-primary-glow btn-sm" id="dock-btn-open-tivi" title="Mở Cửa Sổ Pop-out Tivi 4K Chiếu Cho Học Sinh">📺 Mở Cửa Sổ Tivi Riêng</button>
+                  <button class="btn-danger-glow" id="end-lesson-btn">
+                    <span class="icon">🏁</span> KẾT THÚC TIẾT HỌC
+                  </button>
+                </div>
               </div>
 
               <div class="dock-section">
