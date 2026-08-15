@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeachDS - Teach Digital Space (Hệ Điều Hành Giảng Dạy Số)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <link rel="stylesheet" href="./src/styles/main.css" />
+</head>
+<body class="dark-theme">
+  
+  <div class="app-layout">
+    <!-- COMPACT COLLAPSED LEFT SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">🚀</div>
+        <div class="brand-text">
+          <h1>TeachDS <span class="badge-pro">PRO</span></h1>
+        </div>
+      </div>
+
+      <!-- VERTICAL COMPACT NAV GROUPS -->
+      <nav class="nav-tabs-vertical">
+        <div class="nav-group">
+          <div class="tab-group-label">PHA 1</div>
+          <button class="nav-tab active" data-view="launchpad" title="Launchpad 1-Click">
+            <span class="icon">🚀</span>
+            <span class="tab-title">Launchpad</span>
+          </button>
+          <button class="nav-tab" data-view="live-workspace" title="Live Presenter">
+            <span class="icon">🖥️</span>
+            <span class="tab-title">Presenter</span>
+          </button>
+          <button class="nav-tab" data-view="mobile-remote" title="Remote ĐT">
+            <span class="icon">📱</span>
+            <span class="tab-title">Remote</span>
+          </button>
+          <button class="nav-tab" data-view="post-class" title="Chốt AI 60s">
+            <span class="icon">🤖</span>
+            <span class="tab-title">Chốt AI</span>
+          </button>
+          <button class="nav-tab" data-view="celebration" title="Vinh Danh Pháo Hoa">
+            <span class="icon">🎆</span>
+            <span class="tab-title">Vinh Danh</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="tab-group-label">PHA 2</div>
+          <button class="nav-tab" data-view="timetable" title="Thời Khóa Biểu">
+            <span class="icon">📅</span>
+            <span class="tab-title">TKB Tuần</span>
+          </button>
+          <button class="nav-tab" data-view="capsule-editor" title="Gói Tiết & 5512">
+            <span class="icon">📂</span>
+            <span class="tab-title">Gói 5512</span>
+          </button>
+          <button class="nav-tab" data-view="resource-bank" title="Kho Tài Nguyên">
+            <span class="icon">📚</span>
+            <span class="tab-title">Tài Nguyên</span>
+          </button>
+          <button class="nav-tab" data-view="class-roster" title="Lớp & Sơ Đồ">
+            <span class="icon">📋</span>
+            <span class="tab-title">Sơ Đồ Lớp</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="tab-group-label">PHA 3</div>
+          <button class="nav-tab" data-view="weekly-reports" title="Thiệp Zalo Phụ Huynh">
+            <span class="icon">📊</span>
+            <span class="tab-title">Thiệp Zalo</span>
+          </button>
+          <button class="nav-tab" data-view="settings-pro" title="VietQR Pro">
+            <span class="icon">⚙️</span>
+            <span class="tab-title">VietQR Pro</span>
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <div class="tab-group-label">MODULE 7</div>
+          <button class="nav-tab" data-view="homeroom-analytics" title="Scr 7.3: Điểm Nóng AI">
+            <span class="icon">📈</span>
+            <span class="tab-title">Điểm Nóng</span>
+          </button>
+          <button class="nav-tab" data-view="homeroom-fund" title="Scr 7.4: Quỹ Lớp & Zalo">
+            <span class="icon">💰</span>
+            <span class="tab-title">Quỹ Lớp</span>
+          </button>
+          <button class="nav-tab" data-view="homeroom-tt22" title="Scr 7.5: Hạnh Kiểm TT22">
+            <span class="icon">🎓</span>
+            <span class="tab-title">Hạnh Kiểm</span>
+          </button>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- CONTENT WRAPPER RIGHT SIDE -->
+    <div class="app-content-wrapper">
+      <!-- TOP HEADER -->
+      <header class="app-header">
+        <div class="header-title-area">
+          <h2>TeachDS — Không Gian Dạy Học Số Khép Kín</h2>
+          <p>Giáo viên: Cô Nguyễn Thị Mai — Trường THPT Chu Văn An</p>
+        </div>
+
+        <div class="header-controls">
+          <button class="btn-icon-text" id="toggle-sound-btn" title="Bật/Tắt âm thanh">
+            <span class="icon">🔊</span> <span id="sound-status-text">Âm thanh: Bật</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-container">
+        
+        <!-- VIEW 1: LAUNCHPAD -->
+        <section id="view-launchpad" class="view-section active">
+          <div class="launchpad-container">
+            <div class="welcome-bar glass-card">
+              <div class="user-info">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TeacherNguyen" alt="Avatar" class="user-avatar" />
+                <div>
+                  <h2>Xin chào, Cô Nguyễn Thị Mai! 👋</h2>
+                  <p>Giáo viên Ngữ văn — GVCN Lớp 10A2 — Trường THPT Chu Văn An</p>
+                </div>
+              </div>
+              <div class="realtime-clock-widget">
+                <div class="clock-time" id="live-clock">07:42:15</div>
+                <div class="clock-date" id="live-date">Thứ Ba, Ngày 14 Tháng 8 Năm 2026</div>
+              </div>
+            </div>
+
+            <div class="hero-lesson-card glass-card accent-glow">
+              <div class="status-pill pulse-green">
+                <span class="dot"></span> TIẾT HỌC SẮP ĐẾN GIỜ (BẮT ĐẦU TRONG 3 PHÚT)
+              </div>
+
+              <div class="lesson-details">
+                <div class="lesson-meta">
+                  <span class="meta-tag blue">Thứ 3 — Tiết 2</span>
+                  <span class="meta-tag purple">Môn: Ngữ Văn 10</span>
+                  <span class="meta-tag green">Lớp: 10A2 (Phòng 302)</span>
+                  <span class="meta-tag orange">42 Học sinh</span>
+                </div>
+                <h1 class="lesson-title">Bài 12: Phân Tích Nhân Vật Văn Học (Tác Phẩm "Lặng Lẽ Sa Pa")</h1>
+                <p class="lesson-desc">Kế hoạch 5512: Khám phá kiến thức & Tương tác nhóm 4 hoạt động</p>
+
+                <div class="lesson-resources-summary">
+                  <span class="res-badge"><span class="icon">📊</span> Slide PPTX (20 trang)</span>
+                  <span class="res-badge"><span class="icon">🎥</span> Video clip minh họa (3:20 min)</span>
+                  <span class="res-badge"><span class="icon">🎡</span> Vòng quay may mắn 42 HS</span>
+                  <span class="res-badge check"><span class="icon">✔</span> Đã tải Offline sẵn sàng</span>
+                </div>
+              </div>
+
+              <div class="launch-action">
+                <button class="btn-launch-giant" id="start-lesson-btn">
+                  <span class="rocket">🚀</span>
+                  <div class="btn-text">
+                    <span class="main-label">BẮT ĐẦU DẠY TIẾT HỌC 1-CLICK</span>
+                    <span class="sub-label">Mở màn hình trình chiếu Tivi & Thanh trợ lý PC</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="upcoming-grid">
+              <div class="section-title">
+                <h3>📅 Các Tiết Học Tiếp Theo Trong Ngày</h3>
+                <button class="btn-link" id="goto-schedule-link">Xem Ma Trận Thời Khóa Biểu Tuần ➔</button>
+              </div>
+
+              <div class="grid-cards">
+                <div class="mini-lesson-card glass-card">
+                  <div class="mini-header">
+                    <span class="meta-tag">Tiết 4 (10:00 - 10:45)</span>
+                    <span class="meta-tag green">Lớp 11B1</span>
+                  </div>
+                  <h4>Bài 8: Ôn Tập Ngữ Pháp & Rèn Kỹ Năng Diễn Đạt</h4>
+                  <p>Gói tài nguyên: 15 Slide PPTX + Quizizz</p>
+                  <button class="btn-secondary btn-sm start-specific-lesson">Bắt đầu tiết 11B1</button>
+                </div>
+
+                <div class="mini-lesson-card glass-card">
+                  <div class="mini-header">
+                    <span class="meta-tag">Tiết 6 (13:30 - 14:15)</span>
+                    <span class="meta-tag blue">Lớp 10A5</span>
+                  </div>
+                  <h4>Bài 13: Thực Hành Viết Đoạn Văn Nghị Luận</h4>
+                  <p>Gói tài nguyên: 12 Slide + SCORM Bài giảng</p>
+                  <button class="btn-secondary btn-sm start-specific-lesson">Bắt đầu tiết 10A5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: LIVE WORKSPACE -->
+        <section id="view-live-workspace" class="view-section">
+          <div class="dual-screen-layout">
+            <div class="tivi-display-container glass-card">
+              <div class="tivi-header">
+                <div class="tivi-badge"><span class="dot-red"></span> MÀN HÌNH CHẾ ĐỘ HIỂN THỊ TIVI / MÁY CHIẾU (Dành cho Học sinh)</div>
+                <div class="tivi-slide-info">SLIDE <span id="tivi-slide-num">5</span> / 20</div>
+              </div>
+
+              <div class="slide-viewport" id="slide-viewport">
+                <div class="slide-content" id="slide-content"></div>
+
+                <div class="reward-toast-overlay hidden" id="reward-toast">
+                  <div class="toast-stars">⭐⭐⭐</div>
+                  <div class="toast-body">
+                    <div class="toast-title" id="toast-title">+1 ⭐ Khen Thưởng!</div>
+                    <div class="toast-student" id="toast-student">Em Nguyễn Văn An</div>
+                    <div class="toast-reason" id="toast-reason">Diễn đạt trôi chảy & Tự tin!</div>
+                  </div>
+                </div>
+
+                <div class="modal-overlay hidden" id="wheel-modal">
+                  <div class="wheel-box glass-card">
+                    <h3>🎡 VÒNG QUAY NÓI NGUYÊN TỐ — GỌI TÊN NGẪU NHIÊN</h3>
+                    <div class="wheel-canvas-wrapper">
+                      <canvas id="wheel-canvas" width="300" height="300"></canvas>
+                      <div class="wheel-pointer">▼</div>
+                    </div>
+                    <div class="wheel-result" id="wheel-result">Bấm quay để gọi tên!</div>
+                    <div class="modal-actions">
+                      <button class="btn-primary" id="spin-wheel-btn">Spin! Quay Ngay</button>
+                      <button class="btn-secondary" id="close-wheel-btn">Đóng</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-overlay hidden" id="timer-modal">
+                  <div class="timer-box glass-card">
+                    <h3>⏱️ ĐỒNG HỒ ĐẾM NGƯỢC THẢO LUẬN NHÓM</h3>
+                    <div class="timer-display" id="timer-display">03:00</div>
+                    <div class="modal-actions">
+                      <button class="btn-primary" id="start-timer-btn">Bắt Đầu</button>
+                      <button class="btn-secondary" id="reset-timer-btn">Reset (3 min)</button>
+                      <button class="btn-secondary" id="close-timer-btn">Đóng</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tivi-footer">
+                <span>Môn: Ngữ Văn 10 — Lớp 10A2</span>
+                <span class="live-tag">🔴 LIVE CLASSROOM</span>
+              </div>
+            </div>
+
+            <div class="teacher-dock-container glass-card">
+              <div class="dock-header">
+                <div class="teacher-badge">🎛️ THANH TRỢ LÝ GIẢNG DẠY (Riêng tư Giáo viên)</div>
+                <button class="btn-danger-glow" id="end-lesson-btn">
+                  <span class="icon">🛑</span> KẾT THÚC TIẾT HỌC (60s CHỐT)
+                </button>
+              </div>
+
+              <div class="dock-section">
+                <h4>📖 Điều Khiển Slide Bài Giảng</h4>
+                <div class="slide-controls">
+                  <button class="btn-secondary" id="prev-slide-btn">◄ Slide Trước</button>
+                  <span class="slide-indicator">Slide <strong id="dock-slide-num">5</strong> / 20</span>
+                  <button class="btn-primary" id="next-slide-btn">Slide Tiếp ►</button>
+                </div>
+              </div>
+
+              <div class="dock-section">
+                <div class="section-header-flex">
+                  <h4>⭐ Tích Điểm Nề Nếp 1-Click</h4>
+                  <span class="hint-text">Chạm Avatar ➔ Nổi sao trên Tivi</span>
+                </div>
+                <div class="students-grid" id="students-reward-grid"></div>
+              </div>
+
+              <div class="dock-section">
+                <h4>🎡 Công Cụ Tương Tác Nhanh</h4>
+                <div class="tool-buttons">
+                  <button class="btn-tool" id="trigger-wheel-btn">
+                    <span class="icon">🎡</span> Vòng Quay Gọi Tên
+                  </button>
+                  <button class="btn-tool" id="trigger-timer-btn">
+                    <span class="icon">⏱️</span> Đồng Hồ 3 Phút
+                  </button>
+                </div>
+              </div>
+
+              <div class="dock-section ai-status-card">
+                <div class="ai-header">
+                  <span class="icon-pulse">🎙️</span>
+                  <div>
+                    <strong>Trợ Lý AI Lắng Nghe Thầm Lặng</strong>
+                    <p>Đang ngầm ghi nhận câu nói & lượt phát biểu...</p>
+                  </div>
+                </div>
+                <div class="ai-live-log" id="ai-live-log">
+                  <div class="log-item">18:25 — Phát hiện khen: "Em An diễn đạt trôi chảy"</div>
+                  <div class="log-item">27:10 — Phát hiện khen: "Em Minh trả lời đúng ý"</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: MOBILE REMOTE -->
+        <section id="view-mobile-remote" class="view-section">
+          <div class="mobile-remote-layout">
+            <div class="phone-frame">
+              <div class="phone-speaker"></div>
+              <div class="phone-screen">
+                <div class="phone-header">
+                  <span class="time">07:45</span>
+                  <span class="phone-title">TeachDS Remote 📱</span>
+                  <span class="battery">🔋 98%</span>
+                </div>
+
+                <div class="remote-body">
+                  <div class="remote-status">
+                    <div class="connected-dot"></div> Đã kết nối với Tivi Phòng 302
+                  </div>
+                  <div class="remote-slide-card">
+                    <div class="label">ĐANG CHIẾU</div>
+                    <div class="slide-big-num">SLIDE <span id="remote-slide-num">5</span></div>
+                    <div class="slide-title-preview" id="remote-slide-title">Phân tích nhân vật Sa Pa</div>
+                  </div>
+
+                  <div class="remote-touch-actions">
+                    <button class="btn-remote-big" id="remote-prev-btn">
+                      <span class="arrow">◄</span>
+                      <span>SLIDE TRƯỚC</span>
+                    </button>
+                    <button class="btn-remote-big primary" id="remote-next-btn">
+                      <span>SLIDE TIẾP</span>
+                      <span class="arrow">►</span>
+                    </button>
+                  </div>
+
+                  <div class="swipe-canvas">
+                    <span class="swipe-icon">👈 👉</span>
+                    <span>Vuốt ngón tay để chuyển trang</span>
+                  </div>
+                </div>
+
+                <div class="phone-home-bar"></div>
+              </div>
+            </div>
+
+            <div class="remote-desc-box glass-card">
+              <h3>📱 Trải Nghiệm Mobile Slide Remote Tối Giản</h3>
+              <ul>
+                <li><strong>Mục đích:</strong> Giáo viên cầm điện thoại trên tay đi lại dưới lớp giảng bài vẫn chuyển slide Tivi linh hoạt.</li>
+                <li><strong>Thao tác:</strong> Chạm 2 nút bấm khổng lồ `[◄ Slide Trước]` / `[Slide Tiếp ►]` hoặc quẹt ngón tay.</li>
+                <li><strong>Tương tác Real-time:</strong> Mọi thao tác bấm trên điện thoại ngay lập tức chuyển slide trên Tivi!</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: POST CLASS AI CONFIRMATION -->
+        <section id="view-post-class" class="view-section">
+          <div class="post-class-container glass-card">
+            <div class="post-header">
+              <div class="header-title">
+                <h2>🤖 BẢNG XÁC NHẬN ĐÁNH GIÁ TIẾT HỌC (AI DRAFT REVIEW 60S)</h2>
+                <p>AI đã ngầm lắng nghe & trích xuất lượt khen thưởng. Giáo viên nghe lại audio bối cảnh & duyệt 1-Click:</p>
+              </div>
+              <div class="timer-tag">⏱️ Thời gian chốt ước tính: 45 giây</div>
+            </div>
+
+            <div class="ai-cards-list">
+              <div class="ai-draft-card glass-card">
+                <div class="card-meta">
+                  <span class="timestamp">⏱️ 18:25 — Slide 5: Phân tích nhân vật</span>
+                  <span class="badge-ai">🤖 AI Đề Xuất</span>
+                </div>
+                <div class="card-content-grid">
+                  <div class="student-select">
+                    <label>Học sinh được khen:</label>
+                    <select class="select-student">
+                      <option value="Nguyễn Văn An" selected>Nguyễn Văn An (10A2)</option>
+                      <option value="Nguyễn Văn Anh">Nguyễn Văn Anh (10A2)</option>
+                    </select>
+                  </div>
+
+                  <div class="audio-replay">
+                    <label>Nghe lại âm thanh gốc:</label>
+                    <button class="btn-play-audio" data-src="audio1">
+                      <span class="icon">🔊</span> [🔊 Play 3s Audio Bối Cảnh]
+                    </button>
+                  </div>
+
+                  <div class="score-adjust">
+                    <label>Điểm sao thưởng:</label>
+                    <div class="star-rating">
+                      <button class="btn-star active">⭐</button>
+                      <button class="btn-star active">⭐</button>
+                      <button class="btn-star">⭐</button>
+                    </div>
+                  </div>
+
+                  <div class="tags-note">
+                    <label>Tiêu chí khen thưởng:</label>
+                    <span class="tag-badge green">Diễn đạt trôi chảy</span>
+                    <span class="tag-badge blue">Tự tin</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ai-draft-card glass-card">
+                <div class="card-meta">
+                  <span class="timestamp">⏱️ 27:10 — Slide 8: Luyện tập câu hỏi</span>
+                  <span class="badge-ai">🤖 AI Đề Xuất</span>
+                </div>
+                <div class="card-content-grid">
+                  <div class="student-select">
+                    <label>Học sinh được khen:</label>
+                    <select class="select-student">
+                      <option value="Lê Hoàng Minh" selected>Lê Hoàng Minh (10A2)</option>
+                    </select>
+                  </div>
+
+                  <div class="audio-replay">
+                    <label>Nghe lại âm thanh gốc:</label>
+                    <button class="btn-play-audio" data-src="audio2">
+                      <span class="icon">🔊</span> [🔊 Play 3s Audio Bối Cảnh]
+                    </button>
+                  </div>
+
+                  <div class="score-adjust">
+                    <label>Điểm sao thưởng:</label>
+                    <div class="star-rating">
+                      <button class="btn-star active">⭐</button>
+                      <button class="btn-star">⭐</button>
+                    </div>
+                  </div>
+
+                  <div class="tags-note">
+                    <label>Tiêu chí khen thưởng:</label>
+                    <span class="tag-badge purple">Phát biểu đúng ý</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="post-actions-bar">
+              <button class="btn-secondary" id="cancel-post-btn">✖ Hủy Tất Cả</button>
+              <button class="btn-primary-giant" id="confirm-vinh-danh-btn">
+                <span class="icon">✔</span> XÁC NHẬN & VINH DANH TRÊN TIVI (BẮT ĐẦU PHÁO HOA)
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: CELEBRATION -->
+        <section id="view-celebration" class="view-section">
+          <div class="celebration-container">
+            <canvas id="fireworks-canvas"></canvas>
+            <div class="celebration-content glass-card accent-gold">
+              <div class="trophy-header">
+                <div class="trophy-icon">🏆</div>
+                <h2>VINH DANH NGÔI SAO TIẾT HỌC!</h2>
+                <p>Môn Ngữ Văn 10 — Lớp 10A2 — Ngày 14/08/2026</p>
+              </div>
+
+              <div class="top-stars-grid">
+                <div class="star-winner-card first">
+                  <div class="crown">👑 HẠNG 1</div>
+                  <img src="https://api.dicebear.com/7.x/bottts/svg?seed=An" alt="Avatar" class="winner-avatar" />
+                  <h3>Nguyễn Văn An</h3>
+                  <div class="points-earned">+2 ⭐⭐⭐</div>
+                  <div class="badge-title">Diễn Đạt Trôi Chảy</div>
+                </div>
+
+                <div class="star-winner-card second">
+                  <div class="crown">🥈 HẠNG 2</div>
+                  <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Minh" alt="Avatar" class="winner-avatar" />
+                  <h3>Lê Hoàng Minh</h3>
+                  <div class="points-earned">+1 ⭐</div>
+                  <div class="badge-title">Trả Lời Đúng Ý</div>
+                </div>
+              </div>
+
+              <div class="celebration-actions">
+                <button class="btn-primary" id="back-to-launchpad-btn">🚀 Trở Về Trang Chủ Launchpad</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEWS FOR PHA 2 -->
+        <section id="view-timetable" class="view-section">
+          <div class="timetable-container glass-card">
+            <div class="timetable-header-bar">
+              <div>
+                <h2>📅 QUẢN LÝ THỜI KHÓA BIỂU TUẦN</h2>
+                <p>Thiết lập lịch dạy hàng tuần, bấm vào ô tiết học để gán Gói bài giảng hoặc vào tiết dạy</p>
+              </div>
+              <div class="import-tools">
+                <button class="btn-secondary" id="import-excel-btn">📥 Import Excel TKB</button>
+                <button class="btn-primary" id="ocr-scan-btn">📷 Quét Ảnh TKB Bằng AI</button>
+              </div>
+            </div>
+
+            <div class="timetable-grid-wrapper">
+              <table class="timetable-table">
+                <thead>
+                  <tr>
+                    <th class="col-time">Tiết Học</th>
+                    <th>Thứ Hai</th>
+                    <th>Thứ Ba</th>
+                    <th>Thứ Tư</th>
+                    <th>Thứ Năm</th>
+                    <th>Thứ Sáu</th>
+                    <th>Thứ Bảy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="session-divider"><td colspan="7">☀️ BUỔI SÁNG</td></tr>
+                  <tr>
+                    <td class="col-time">Tiết 1 (07:00-07:45)</td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                    <td>
+                      <div class="slot-card active blue">
+                        <span class="slot-class">Lớp 10A2</span>
+                        <span class="slot-subject">Ngữ Văn 10</span>
+                        <button class="btn-slot-action">Vào tiết ➔</button>
+                      </div>
+                    </td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                    <td>
+                      <div class="slot-card active purple">
+                        <span class="slot-class">Lớp 11B1</span>
+                        <span class="slot-subject">Ngữ Văn 11</span>
+                        <button class="btn-slot-action">Vào tiết ➔</button>
+                      </div>
+                    </td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                  </tr>
+                  <tr>
+                    <td class="col-time">Tiết 2 (07:50-08:35)</td>
+                    <td>
+                      <div class="slot-card active green">
+                        <span class="slot-class">Lớp 10A5</span>
+                        <span class="slot-subject">Ngữ Văn 10</span>
+                        <button class="btn-slot-action">Vào tiết ➔</button>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="slot-card active current-highlight blue">
+                        <span class="current-badge">🔴 TIẾT SẮP ĐẾN GIỜ</span>
+                        <span class="slot-class">Lớp 10A2</span>
+                        <span class="slot-subject">Ngữ Văn 10</span>
+                        <button class="btn-slot-action highlight" id="timetable-start-hero">Bắt đầu ngay 🚀</button>
+                      </div>
+                    </td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                    <td>
+                      <div class="slot-card active blue">
+                        <span class="slot-class">Lớp 10A2</span>
+                        <span class="slot-subject">Ngữ Văn 10</span>
+                        <button class="btn-slot-action">Vào tiết ➔</button>
+                      </div>
+                    </td>
+                    <td><div class="slot-card empty">+ Thêm tiết</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-capsule-editor" class="view-section">
+          <div class="capsule-editor-container glass-card">
+            <div class="capsule-header">
+              <div>
+                <h2>📂 BIÊN SOẠN GÓI TIẾT DẠY & GIÁO ÁN 5512</h2>
+                <p>Đóng gói tài nguyên Slide, Video, Quizizz và soạn Kế hoạch bài dạy chuẩn Bộ GD&ĐT</p>
+              </div>
+              <button class="btn-primary" id="save-capsule-btn">💾 Lưu Gói Tài Nguyên & Cache Offline</button>
+            </div>
+
+            <div class="capsule-meta-form grid-3-cols">
+              <div class="form-group">
+                <label>Chọn Lớp Học & Môn:</label>
+                <select class="form-control">
+                  <option value="10A2" selected>Lớp 10A2 — Ngữ Văn 10</option>
+                  <option value="11B1">Lớp 11B1 — Ngữ Văn 11</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tên Tiết / Tên Bài Dạy:</label>
+                <input type="text" class="form-control" value="Bài 12: Phân Tích Nhân Vật Văn Học (Lặng Lẽ Sa Pa)" />
+              </div>
+              <div class="form-group">
+                <label>Tiết Theo TKB:</label>
+                <input type="text" class="form-control" value="Thứ 3 — Tiết 2 (07:50 - 08:35)" />
+              </div>
+            </div>
+
+            <div class="upload-dropzone-box" id="dropzone-box">
+              <div class="upload-icon">📁</div>
+              <h3>KÉO VÀ THẢ FILE BÀI GIẢNG VÀO ĐÂY</h3>
+              <p>Hỗ trợ file PowerPoint (.pptx), PDF, Video MP4, Audio MP3 (Tối đa 500MB)</p>
+              <button class="btn-secondary" id="browse-file-btn">Hoặc Bấm Chọn File Từ Máy Tính</button>
+            </div>
+
+            <div class="attached-files-list">
+              <h4>📎 Tài Nguyên Đã Đóng Gói Trong Tiết Này:</h4>
+              <div class="file-cards-grid">
+                <div class="file-item-card glass-card">
+                  <span class="icon-file ppt">📊</span>
+                  <div class="file-details">
+                    <span class="fname">Slide_Lang_Le_Sa_Pa_10A2.pptx</span>
+                    <span class="fsize">24.5 MB • 20 Trang slide</span>
+                  </div>
+                  <span class="status-badge check">✔ Đã cache Offline</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="editor-5512-section">
+              <h4>📑 Kế Hoạch Bài Dạy Chuẩn 5512 (4 Hoạt Động Bắt Buộc)</h4>
+              <div class="tabs-5512">
+                <button class="tab-5512 active" data-act="1">1. Mở Đầu / Khởi Động (5 min)</button>
+                <button class="tab-5512" data-act="2">2. Hình Thành Kiến Thức (20 min)</button>
+                <button class="tab-5512" data-act="3">3. Luyện Tập / Thảo Luận (15 min)</button>
+                <button class="tab-5512" data-act="4">4. Vận Dụng & Dặn Dò (5 min)</button>
+              </div>
+              <div class="activity-content-box" id="act-5512-box">
+                <textarea class="form-control textarea-5512" rows="5">Hoạt động 1: Khởi động (5 phút)
+- Mục tiêu: Tạo tâm thế hứng thú, kết nối kiến thức cũ - mới.
+- Thao tác: Bật Vòng quay may mắn gọi ngẫu nhiên 1 học sinh trả lời câu hỏi về hoàn cảnh sống tại Sa Pa.
+- Sản phẩm: Học sinh trả lời đúng được thưởng +1 ⭐ trên Tivi.</textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-resource-bank" class="view-section">
+          <div class="resource-bank-container glass-card">
+            <div class="bank-header">
+              <div>
+                <h2>📚 KHO BÀI GIẢNG & NGÂN HÀNG TÀI NGUYÊN CỦA TÔI</h2>
+                <p>Lưu trữ, phân loại và tái sử dụng các Slide, Đề thi, Kế hoạch 5512 qua các năm học</p>
+              </div>
+              <div class="search-box-flex">
+                <input type="text" class="form-control search-input" placeholder="🔍 Tìm kiếm slide, bài giảng, đề thi..." />
+                <button class="btn-primary">+ Thêm Thư Mục Mới</button>
+              </div>
+            </div>
+
+            <div class="bank-folders-grid">
+              <div class="folder-card glass-card">
+                <div class="f-icon">📁</div>
+                <div class="f-name">Kho Slide Ngữ Văn 10 (GDPT 2018)</div>
+                <div class="f-meta">48 Files • Cập nhật 2 ngày trước</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-class-roster" class="view-section">
+          <div class="class-roster-container glass-card">
+            <div class="roster-header">
+              <div>
+                <h2>📋 QUẢN LÝ DANH SÁCH LỚP & SƠ ĐỒ CHỖ NGỒI</h2>
+                <p>Quản lý học sinh, import danh sách từ Excel và xếp sơ đồ bàn học 4x8 trong lớp</p>
+              </div>
+              <div class="header-actions">
+                <button class="btn-secondary" id="import-student-excel-btn">📥 Import Danh Sách Lớp Từ Excel</button>
+                <button class="btn-primary" id="save-seating-chart-btn">💾 Lưu Sơ Đồ Bàn Học</button>
+              </div>
+            </div>
+
+            <div class="class-tabs-bar">
+              <button class="class-tab active">Lớp 10A2 (42 Học Sinh)</button>
+            </div>
+
+            <div class="roster-body-grid">
+              <div class="seating-chart-box glass-card">
+                <h3>🪑 Sơ Đồ Chỗ Ngồi Lớp 10A2 (4 Dãy x 8 Bàn)</h3>
+                <div class="podium-label">=== BỤC GIẢNG & MÀN HÌNH TIVI ===</div>
+                <div class="seating-matrix-grid" id="seating-matrix-grid"></div>
+              </div>
+
+              <div class="roster-table-box glass-card">
+                <h3>📋 Danh Sách Học Sinh Lớp 10A2</h3>
+                <div class="table-scroll">
+                  <table class="roster-table">
+                    <thead>
+                      <tr>
+                        <th>STT</th>
+                        <th>Họ và Tên</th>
+                        <th>Mã HS</th>
+                        <th>Tổng Sao</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody id="roster-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PHA 3 VIEWS -->
+        <section id="view-weekly-reports" class="view-section">
+          <div class="weekly-reports-container glass-card">
+            <div class="reports-header-bar">
+              <div>
+                <h2>📊 TỔNG KẾT TUẦN & TẠO THIỆP ZALO PHỤ HUYNH</h2>
+                <p>Tự động tạo Thiệp Báo Cáo AI nề nếp & xuất file dữ liệu chuẩn Bộ GD&ĐT</p>
+              </div>
+              <div class="export-actions">
+                <button class="btn-secondary" id="export-vnedu-btn">📥 Xuất Excel VNPT vnEdu</button>
+                <button class="btn-primary" id="export-enetviet-btn">📥 Xuất Excel eNetViet / SMAS</button>
+              </div>
+            </div>
+
+            <div class="reports-main-layout">
+              <div class="zalo-card-preview-box glass-card accent-glow">
+                <div class="card-preview-header">
+                  <span class="zalo-tag">📱 THIỆP BÁO CÁO TUẦN (ZALO / APP PHỤ HUYNH)</span>
+                  <select class="select-student-report" id="report-student-select">
+                    <option value="Nguyễn Văn An" selected>Học sinh: Nguyễn Văn An (Lớp 10A2)</option>
+                  </select>
+                </div>
+
+                <div class="zalo-infographic-card" id="zalo-card">
+                  <div class="z-card-top">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TeacherNguyen" alt="Teacher" class="t-avatar" />
+                    <div class="z-school">
+                      <h3>THPT CHU VĂN AN — LỚP 10A2</h3>
+                      <p>Thiệp Kết Quả Học Tập & Nề Nếp Tuần 24</p>
+                    </div>
+                  </div>
+
+                  <div class="z-student-profile">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=An" alt="Student" class="z-avatar" />
+                    <div class="z-sname">
+                      <h2 id="z-student-name">Nguyễn Văn An</h2>
+                      <span class="z-rank">🏆 Xếp Hạng Tuần: TOP 1 NỔI BẬT</span>
+                    </div>
+                  </div>
+
+                  <div class="z-stats-grid">
+                    <div class="z-stat-box">
+                      <span class="val">+15 ⭐</span>
+                      <span class="lbl">Sao Thưởng</span>
+                    </div>
+                    <div class="z-stat-box">
+                      <span class="val">5 Lần</span>
+                      <span class="lbl">Phát Biểu</span>
+                    </div>
+                    <div class="z-stat-box">
+                      <span class="val">100%</span>
+                      <span class="lbl">Chuyên Cần</span>
+                    </div>
+                  </div>
+
+                  <div class="z-ai-evaluation">
+                    <h4>🤖 AI ĐÁNH GIÁ NỀ NẾP & THÁI ĐỘ:</h4>
+                    <p id="z-ai-text">"Em An tuần này thể hiện tinh thần học tập hăng hái, chủ động phát biểu trong môn Ngữ văn."</p>
+                  </div>
+
+                  <div class="z-footer">
+                    <span>Giáo viên chủ nhiệm: Cô Nguyễn Thị Mai</span>
+                    <span class="watermark">PowerBy LênLớp AI</span>
+                  </div>
+                </div>
+
+                <div class="zalo-action-buttons">
+                  <button class="btn-primary-giant" id="send-zalo-btn">📲 GỬI NGAY QUA ZALO PHỤ HUYNH</button>
+                  <button class="btn-secondary" id="download-card-img-btn">🖼️ Tải Ảnh Thiệp (.PNG)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-settings-pro" class="view-section">
+          <div class="settings-pro-container glass-card">
+            <div class="settings-header-bar">
+              <div>
+                <h2>⚙️ CÀI ĐẶT HỆ THỐNG & NÂNG CẤP VIETQR PRO</h2>
+                <p>Cấu hình thiết bị Micro AI, phím tắt Bút trình chiếu và thanh toán tự động gói Pro</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MODULE 7 VIEWS -->
+        <section id="view-homeroom-analytics" class="view-section">
+          <div class="homeroom-view-container glass-card">
+            <div class="view-header-bar">
+              <div>
+                <h2>📈 SCR 7.3: BẢNG ĐIỀU KIỂN NỀ NẾP & BẢN ĐỒ ĐIỂM NÓNG AI</h2>
+                <p>Phân tích xu hướng 42 học sinh Lớp 10A2 — Phát hiện sớm điểm nóng kỷ luật & tâm lý học đường</p>
+              </div>
+              <div class="time-filter">
+                <select class="form-control">
+                  <option selected>Học Kỳ 1 (Tuần 1 - 18)</option>
+                  <option>Tuần Này (Tuần 24)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="analytics-grid-layout">
+              <div class="risk-alerts-box glass-card accent-red">
+                <h3>⚠️ THẺ CẢNH BẢO "ĐIỂM NÓNG AI" (STUDENT RISK ALERTS)</h3>
+                <p class="section-subtext">AI tự động bóc tách nhật ký vi phạm & điểm số sa sút để GVCN can thiệp sớm:</p>
+
+                <div class="risk-cards-list">
+                  <div class="risk-card glass-card">
+                    <div class="risk-badge red">🔴 CẢNH BẢO VẮNG HỌC</div>
+                    <div class="risk-student-info">
+                      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Dung" class="avatar-mini" />
+                      <div>
+                        <strong>Phạm Quốc Dũng (Bàn 2B)</strong>
+                        <p>Vắng 3 tiết Toán & Lý không lý do trong tuần. Cần gọi Zalo phụ huynh gấp.</p>
+                      </div>
+                    </div>
+                    <button class="btn-danger-glow btn-sm" id="btn-call-parent">📲 Gọi Zalo Phụ Huynh</button>
+                  </div>
+
+                  <div class="risk-card glass-card">
+                    <div class="risk-badge orange">🟠 SA SÚT PHÁT BIỂU</div>
+                    <div class="risk-student-info">
+                      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Giang" class="avatar-mini" />
+                      <div>
+                        <strong>Đỗ Thanh Giang (Bàn 3B)</strong>
+                        <p>Giảm 70% lượt tương tác trong 2 tuần qua. Biểu hiện thụ động trong tiết Anh & Văn.</p>
+                      </div>
+                    </div>
+                    <button class="btn-secondary btn-sm" onclick="alert('Mở lịch hẹn tư vấn tâm lý em Giang')">💬 Hẹn Tư Vấn</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="radar-chart-box glass-card">
+                <h3>📊 BIỂU ĐỒ RADAR 5 TIÊU CHÍ RÈN LUYỆN (LỚP 10A2)</h3>
+                <div class="radar-visual-mock">
+                  <div class="radar-criterion"><span>Chuyên Cần (95%)</span><div class="bar-fill green" style="width: 95%;"></div></div>
+                  <div class="radar-criterion"><span>Kỷ Luật Nề Nếp (88%)</span><div class="bar-fill blue" style="width: 88%;"></div></div>
+                  <div class="radar-criterion"><span>Thái Độ Học Tập (92%)</span><div class="bar-fill purple" style="width: 92%;"></div></div>
+                  <div class="radar-criterion"><span>Tương Tác Nhóm (85%)</span><div class="bar-fill orange" style="width: 85%;"></div></div>
+                  <div class="radar-criterion"><span>Kết Quả Bài Kiểm Tra (90%)</span><div class="bar-fill gold" style="width: 90%;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-homeroom-fund" class="view-section">
+          <div class="homeroom-view-container glass-card">
+            <div class="view-header-bar">
+              <div>
+                <h2>💰 SCR 7.4: TRUNG TÂM THU CHI QUỸ LỚP & ZALO PHỤ HUYNH</h2>
+                <p>Minh bạch hóa quỹ lớp 10A2, gạch nợ VietQR tự động & liên lạc Ban đại diện Phụ huynh 1-Click</p>
+              </div>
+              <button class="btn-primary" id="add-fund-entry-btn">+ Thêm Khoản Thu/Chi Mới</button>
+            </div>
+
+            <div class="fund-grid-layout">
+              <div class="fund-ledger-box glass-card">
+                <div class="fund-summary-cards">
+                  <div class="f-stat-card green">
+                    <span class="lbl">Tổng Thu Quỹ HK1</span>
+                    <span class="val">12,600,000 VNĐ</span>
+                  </div>
+                  <div class="f-stat-card red">
+                    <span class="lbl">Đã Chi Tiêu</span>
+                    <span class="val">4,250,000 VNĐ</span>
+                  </div>
+                  <div class="f-stat-card blue">
+                    <span class="lbl">Quỹ Dư Hiện Tại</span>
+                    <span class="val">8,350,000 VNĐ</span>
+                  </div>
+                </div>
+
+                <h3>📋 Nhật Ký Thu Chi Quỹ Lớp 10A2</h3>
+                <table class="roster-table">
+                  <thead>
+                    <tr>
+                      <th>Ngày</th>
+                      <th>Nội dung Thu/Chi</th>
+                      <th>Loại</th>
+                      <th>Số Tiền</th>
+                      <th>Trạng Thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>10/08/2026</td>
+                      <td>Thu quỹ lớp HK1 (42 HS x 300k)</td>
+                      <td><span class="tag-badge green">Thu</span></td>
+                      <td>+12,600,000đ</td>
+                      <td><span class="tag-badge check">Đã thu 40/42 HS</span></td>
+                    </tr>
+                    <tr>
+                      <td>12/08/2026</td>
+                      <td>Mua phần thưởng vinh danh tiết học</td>
+                      <td><span class="tag-badge red">Chi</span></td>
+                      <td>-1,250,000đ</td>
+                      <td><span class="tag-badge blue">Có hóa đơn</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="fund-vietqr-box glass-card accent-gold">
+                <h3>📲 VIETQR THU QUỸ HỌC PHÍ & ZALO PHỤ HUYNH</h3>
+                <p class="hint-text">Phụ huynh quét QR chuyển khoản 300,000 VNĐ ➔ Hệ thống tự động gạch nợ thành công!</p>
+
+                <div class="qr-collection-preview">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PAYOS_QUY_LOP_10A2_300K" alt="VietQR Quỹ Lớp" />
+                  <div class="qr-details-text">
+                    <strong>QUỸ LỚP 10A2 — THPT CHU VĂN AN</strong>
+                    <span>MBBank: <code>99998888666</code></span>
+                    <span>Nội dung chuyển khoản: <code>QUY 10A2 [TEN HS]</code></span>
+                  </div>
+                </div>
+
+                <div class="zalo-broadcast-actions">
+                  <button class="btn-primary-giant" id="btn-send-fund-reminder">
+                    📲 GỬI TIN NHẮN ZALO NHẮC NỘP QUỸ LỚP (2 HS CHƯA NỘP)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-homeroom-tt22" class="view-section">
+          <div class="homeroom-view-container glass-card">
+            <div class="view-header-bar">
+              <div>
+                <h2>🎓 SCR 7.5: CHỐT HẠNH KIỂM / RÈN LUYỆN THÔNG TƯ 22 & ĐỒNG BỘ VNEDU</h2>
+                <p>Tự động hóa 100% xếp loại Rèn luyện cuối học kỳ theo Quy định Bộ GD&ĐT (Thông tư 22/2021/TT-BGDĐT)</p>
+              </div>
+              <div class="export-actions">
+                <button class="btn-primary-giant" id="btn-sync-vnedu-tt22">
+                  <span class="icon">🚀</span> 1-CLICK ĐỒNG BỘ LÊN VNEDU / SMAS
+                </button>
+              </div>
+            </div>
+
+            <div class="tt22-matrix-box glass-card">
+              <h3>📋 BẢNG MA TRẬN ĐỀ XUẤT XẾP LOẠI RÈN LUYỆN AI (LỚP 10A2 - HK1)</h3>
+              <table class="roster-table tt22-table">
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Họ và Tên Học Sinh</th>
+                    <th>Tổng Sao ⭐</th>
+                    <th>Sĩ Số Vắng</th>
+                    <th>AI Đề Xuất TT22</th>
+                    <th>GVCN Chốt</th>
+                    <th>Nhận Xét Học Bạ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td><strong>Nguyễn Văn An</strong></td>
+                    <td><span class="tag-badge green">45 ⭐</span></td>
+                    <td>0 Tiết</td>
+                    <td><span class="status-badge-tt22 tot">🏆 TỐT</span></td>
+                    <td>
+                      <select class="select-tt22">
+                        <option selected>Tốt</option>
+                        <option>Khá</option>
+                        <option>Đạt</option>
+                      </select>
+                    </td>
+                    <td><input type="text" class="form-control form-sm" value="Chăm ngoan, hăng hái phát biểu, giữ chức Tổ trưởng xuất sắc." /></td>
+                  </tr>
+
+                  <tr>
+                    <td>2</td>
+                    <td><strong>Lê Hoàng Minh</strong></td>
+                    <td><span class="tag-badge green">38 ⭐</span></td>
+                    <td>1 Tiết (Có phép)</td>
+                    <td><span class="status-badge-tt22 tot">🏆 TỐT</span></td>
+                    <td>
+                      <select class="select-tt22">
+                        <option selected>Tốt</option>
+                        <option>Khá</option>
+                      </select>
+                    </td>
+                    <td><input type="text" class="form-control form-sm" value="Học lực giỏi, lễ phép, hòa đồng với bạn bè." /></td>
+                  </tr>
+
+                  <tr>
+                    <td>3</td>
+                    <td><strong>Phạm Quốc Dũng</strong></td>
+                    <td><span class="tag-badge orange">12 ⭐</span></td>
+                    <td>3 Tiết (Không phép)</td>
+                    <td><span class="status-badge-tt22 kha">⚡ KHÁ</span></td>
+                    <td>
+                      <select class="select-tt22">
+                        <option selected>Khá</option>
+                        <option>Đạt</option>
+                      </select>
+                    </td>
+                    <td><input type="text" class="form-control form-sm" value="Cần cố gắng chuyên cần hơn trong học kỳ 2." /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

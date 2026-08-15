@@ -1,0 +1,25 @@
+/* ============================================================ */
+/* MASTER CSS ENTRYPOINT - TeachDS PRODUCTION WORKSPACE          */
+/* ============================================================ */
+
+@import './variables.css';
+@import './base.css';
+
+/* COMPONENTS */
+@import './components/header.css';
+@import './components/buttons.css';
+@import './components/cards.css';
+
+/* ALL 12 VIEW SPECIFIC STYLES FOR ALL 18 SCREENS */
+@import './views/launchpad.css';
+@import './views/liveWorkspace.css';
+@import './views/mobileRemote.css';
+@import './views/postClass.css';
+@import './views/celebration.css';
+@import './views/timetable.css';
+@import './views/capsuleEditor.css';
+@import './views/resourceBank.css';
+@import './views/classRoster.css';
+@import './views/weeklyReports.css';
+@import './views/settingsPro.css';
+@import './views/homeroom.css';

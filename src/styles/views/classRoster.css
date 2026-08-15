@@ -1,0 +1,112 @@
+/* ============================================================ */
+/* VIEW: SCREEN 4.1 & 4.2 CLASS ROSTER & SEATING CHART */
+/* ============================================================ */
+
+.class-roster-container {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.roster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.roster-header h2 { font-family: var(--font-heading); font-size: 22px; color: var(--accent-blue); }
+.header-actions { display: flex; gap: 12px; }
+
+.class-tabs-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.class-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.class-tab.active {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+}
+
+.roster-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.seating-chart-box, .roster-table-box {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.podium-label {
+  text-align: center;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.seating-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.seat-cell {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.seat-cell:hover {
+  border-color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.seat-cell .s-avatar { width: 36px; height: 36px; border-radius: 50%; }
+.seat-cell .s-name { font-size: 12px; font-weight: 700; }
+.seat-cell .s-stars { font-size: 11px; color: var(--accent-gold); }
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.roster-table th, .roster-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.roster-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}

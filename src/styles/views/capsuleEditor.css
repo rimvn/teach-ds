@@ -1,0 +1,118 @@
+/* ============================================================ */
+/* VIEW: SCREEN 3.2 LESSON CAPSULE & 5512 EDITOR */
+/* ============================================================ */
+
+.capsule-editor-container {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.capsule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.capsule-header h2 { font-family: var(--font-heading); font-size: 22px; color: var(--accent-green); }
+
+.grid-3-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-color);
+  color: white;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.upload-dropzone-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone-box:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--accent-blue);
+}
+
+.upload-icon { font-size: 40px; }
+.upload-dropzone-box h3 { font-family: var(--font-heading); font-size: 18px; color: var(--accent-blue); }
+.upload-dropzone-box p { font-size: 13px; color: var(--text-dim); }
+
+.attached-files-list h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+
+.file-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.file-item-card {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.icon-file { font-size: 28px; }
+.file-details { flex: 1; display: flex; flex-direction: column; }
+.file-details .fname { font-size: 13px; font-weight: 700; color: white; }
+.file-details .fsize { font-size: 11px; color: var(--text-muted); }
+.status-badge.check { font-size: 11px; color: var(--accent-green); font-weight: 700; }
+
+.editor-5512-section h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+
+.tabs-5512 {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tab-5512 {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-5512.active {
+  background: var(--accent-purple);
+  color: white;
+  border-color: var(--accent-purple);
+}
+
+.textarea-5512 {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.6;
+}

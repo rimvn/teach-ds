@@ -1,0 +1,27 @@
+/* ============================================================ */
+/* VIEW: SCREEN 5.1 MOBILE SLIDE REMOTE */
+/* ============================================================ */
+
+.mobile-remote-layout { display: flex; justify-content: center; align-items: center; gap: 40px; min-height: 700px; flex-wrap: wrap; }
+.phone-frame { width: 340px; height: 680px; background: #000; border: 12px solid #334155; border-radius: 48px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+.phone-speaker { width: 80px; height: 6px; background: #1e293b; border-radius: 3px; margin: 12px auto 0 auto; }
+.phone-screen { flex: 1; background: #090d16; display: flex; flex-direction: column; padding: 16px; }
+.phone-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 20px; }
+.phone-title { font-weight: 700; color: var(--accent-blue); }
+.remote-body { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.remote-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent-green); background: rgba(16, 185, 129, 0.1); padding: 8px 12px; border-radius: 20px; }
+.connected-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; }
+.remote-slide-card { background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 20px; border-radius: var(--radius-lg); text-align: center; }
+.remote-slide-card .label { font-size: 11px; color: var(--text-muted); }
+.slide-big-num { font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: var(--accent-gold); }
+.slide-title-preview { font-size: 14px; color: #cbd5e1; margin-top: 6px; }
+.remote-touch-actions { display: flex; flex-direction: column; gap: 14px; }
+.btn-remote-big { background: rgba(255, 255, 255, 0.1); border: 2px solid var(--border-color); color: white; padding: 24px; border-radius: var(--radius-lg); font-size: 18px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.15s ease; }
+.btn-remote-big:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.3); }
+.btn-remote-big.primary { background: linear-gradient(135deg, var(--accent-blue), #2563eb); border: none; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); }
+.swipe-canvas { flex: 1; background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255, 255, 255, 0.1); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--text-dim); }
+.swipe-icon { font-size: 24px; }
+.phone-home-bar { width: 120px; height: 4px; background: #475569; border-radius: 2px; margin: 10px auto 0 auto; }
+.remote-desc-box { max-width: 450px; padding: 28px; }
+.remote-desc-box h3 { font-family: var(--font-heading); font-size: 20px; margin-bottom: 16px; color: var(--accent-blue); }
+.remote-desc-box ul { padding-left: 20px; font-size: 14px; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px; }
