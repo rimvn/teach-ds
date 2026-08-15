@@ -300,31 +300,68 @@ export class LiveWorkspaceView extends BaseView {
     if (resultEl) resultEl.textContent = '🎲 Đang quay ngẫu nhiên...';
 
     const { students } = store.getState();
-    const winningIndex = Math.floor(Math.random() * students.length);
+    const numSlices = students.length || 6;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+    
+    // Pick random winning index
+    const winningIndex = Math.floor(Math.random() * numSlices);
     const winner = students[winningIndex] || { name: 'Trần Bảo Nam', id: '1' };
 
-    const totalRotation = (2 * Math.PI * 5) + (winningIndex * ((2 * Math.PI) / students.length));
+    // Calculate exact angle to center winning slice under top pointer (12 o'clock = 3π/2)
+    // Plus random offset within middle 60% of the slice (never on boundary lines!)
+    const sliceCenterAngle = winningIndex * sliceAngle + sliceAngle / 2;
+    const pointerAngle = 1.5 * Math.PI; // Top 12 o'clock
+    const randomWithinSector = (Math.random() - 0.5) * (sliceAngle * 0.6);
+    
+    const targetAngle = pointerAngle - sliceCenterAngle + randomWithinSector;
+    const fullSpins = 5 * 2 * Math.PI; // 5 full rotations
+    const finalWheelAngle = fullSpins + targetAngle;
+
+    const startAngle = this.wheelAngle % (2 * Math.PI);
+    const totalDelta = finalWheelAngle - startAngle;
     const startTime = performance.now();
 
     const animate = (now) => {
       const elapsed = now - startTime;
-      const progress = Math.min(elapsed / 3000, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      this.wheelAngle = totalRotation * easeOut;
+      const progress = Math.min(elapsed / 3200, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+      this.wheelAngle = startAngle + totalDelta * easeOut;
       this.drawWheel();
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         this.isSpinning = false;
-        if (resultEl) resultEl.textContent = `🎯 MỜI PHÁT BIỂU: ${winner.name}!`;
+        if (resultEl) resultEl.textContent = winner.name;
         audioSynthesizer.playChime();
-        this.showRewardToast(winner.name, 0, '🎯 Đã chọn gọi tên phát biểu!', winner.avatar);
-        // KHÔNG TỰ ĐỘNG CỘNG SAO: Chỉ khi học sinh trả lời đúng cô mới bấm thưởng sao sau!
+        this.showSelectionToast(winner.name);
       }
     };
 
     requestAnimationFrame(animate);
+  }
+
+  /**
+   * Selection Toast Notification Overlay (Chuyên biệt cho Chọn Học Sinh Vòng Quay)
+   */
+  showSelectionToast(studentName) {
+    const toast = document.getElementById('selection-toast');
+    const toastStudent = document.getElementById('select-toast-student');
+    if (!toast) return;
+
+    if (toastStudent) toastStudent.textContent = `Em ${studentName}`;
+
+    toast.classList.remove('hidden');
+    toast.style.display = 'flex';
+    toast.classList.remove('toast-bounce-in');
+    void toast.offsetWidth;
+    toast.classList.add('toast-bounce-in');
+
+    if (this.selectionToastTimer) clearTimeout(this.selectionToastTimer);
+    this.selectionToastTimer = setTimeout(() => {
+      toast.classList.add('hidden');
+      toast.style.display = 'none';
+    }, 3200);
   }
 
   /**
