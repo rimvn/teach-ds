@@ -54,6 +54,7 @@ export const APP_CONFIG = {
 
   // PREDEFINED GDPT 2018 FULL SUBJECT CATALOG (PRIMARY + SECONDARY + HIGH SCHOOL)
   subjects: {
+    HOMEROOM: { code: 'HOMEROOM', name: 'Sơ Đồ Lớp Chủ Nhiệm (Mặc định)', shortName: 'Chủ Nhiệm', icon: '🏫', level: ['PRIMARY', 'LOWER_SEC', 'UPPER_SEC'] },
     // === PRIMARY SCHOOL SUBJECTS (CẤP 1) ===
     TIENG_VIET: { code: 'TIENG_VIET', name: 'Tiếng Việt', shortName: 'T.Việt', icon: '📖', level: ['PRIMARY'] },
     TOAN_TH:    { code: 'TOAN_TH',    name: 'Toán Tiểu Học', shortName: 'Toán', icon: '📐', level: ['PRIMARY'] },

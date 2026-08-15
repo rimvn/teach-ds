@@ -9,6 +9,7 @@ import { localFirstAdapter, STORAGE_STORES } from '../core/adapters/LocalFirstAd
 import { audioSynthesizer } from '../core/AudioSynthesizer.js';
 import { ipcDispatcher } from '../core/IPCDispatcher.js';
 import { router } from '../core/Router.js';
+import { APP_CONFIG, GRADES, getSubjectsForGrade as getAppSubjectsForGrade } from '../config/appConfig.js';
 
 export class ClassRosterView extends BaseView {
   constructor() {
@@ -21,15 +22,93 @@ export class ClassRosterView extends BaseView {
     this.draggedStudentId = null;
     this.isFullSeating = false;
     this.currentSemester = '2026_HK1';
+    this.currentSubject = 'HOMEROOM'; // 'HOMEROOM', 'MATH', 'ENG', 'PHYS', 'CHEM'...
   }
 
   async onMount() {
     console.log('📋 [ClassRosterView] Mounted Desk Furniture Types & Seating Matrix (TASK-SP5-03)');
+    await this.renderSubjectSelectForGrade();
     await this.loadStudents();
     await this.loadCurrentSemesterSeating();
-    this.renderRosterTable();
+    this.syncSeatingGridWithCurrentStudents();
     this.renderSeatingChartMatrix();
+    this.renderRosterTable();
     this.bindEvents();
+  }
+
+  ensureSeatingGridInitialized() {
+    const totalDesks = this.matrixCols * this.matrixRows;
+    const capacityPerDesk = this.deskType === 'DOUBLE' ? 2 
+      : (this.deskType === 'POD4' ? 4 
+      : (this.deskType === 'POD6' ? 6 
+      : (this.deskType.startsWith('CAPACITY_') ? parseInt(this.deskType.replace('CAPACITY_', ''), 10) : 1)));
+
+    const totalSlots = totalDesks * capacityPerDesk;
+
+    if (!this.seatingGrid || this.seatingGrid.length !== totalSlots) {
+      this.seatingGrid = Array(totalSlots).fill(null);
+      for (let sIdx = 0; sIdx < Math.min(this.students.length, totalSlots); sIdx++) {
+        this.seatingGrid[sIdx] = this.students[sIdx];
+      }
+    }
+  }
+
+  getSubjectsForGrade(classId = this.currentClass) {
+    const gradeNum = parseInt(classId.replace(/\D/g, ''), 10) || 10;
+    const gradeCode = `K${gradeNum}`;
+
+    // Get official pre-seeded subjects from central APP_CONFIG taxonomy engine
+    const appSubjects = getAppSubjectsForGrade(gradeCode);
+
+    return (appSubjects || []).map(s => ({
+      key: s.code,
+      name: `${s.icon} ${s.name}`
+    }));
+  }
+
+  async renderSubjectSelectForGrade() {
+    const subjectSelect = document.getElementById('select-seating-subject');
+    if (!subjectSelect) return;
+
+    const gradeSubjects = this.getSubjectsForGrade(this.currentClass);
+
+    let customSubjects = [];
+    try {
+      const rec = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, `CUSTOM_SUBJECTS_${this.currentClass}`);
+      if (rec && rec.value) customSubjects = rec.value;
+    } catch (e) {}
+    if (!customSubjects || customSubjects.length === 0) {
+      try {
+        const raw = localStorage.getItem(`CUSTOM_SUBJECTS_${this.currentClass}`);
+        if (raw) customSubjects = JSON.parse(raw);
+      } catch (e) {}
+    }
+
+    const allSubjects = [...gradeSubjects, ...(customSubjects || [])];
+
+    subjectSelect.innerHTML = `
+      ${allSubjects.map(s => `<option value="${s.key}" ${s.key === this.currentSubject ? 'selected' : ''}>${s.name}</option>`).join('')}
+      <option value="ADD_CUSTOM_SUBJECT">+ ➕ Thêm Bộ Môn Mới Cho Lớp ${this.currentClass}...</option>
+    `;
+  }
+
+  async saveCustomSubject(key, name) {
+    let customSubjects = [];
+    const storageId = `CUSTOM_SUBJECTS_${this.currentClass}`;
+    try {
+      const rec = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, storageId);
+      if (rec && rec.value) customSubjects = rec.value;
+    } catch (e) {}
+    if (!customSubjects) customSubjects = [];
+
+    customSubjects.push({ key, name });
+
+    try {
+      await localFirstAdapter.put(STORAGE_STORES.SETTINGS, { id: storageId, value: customSubjects });
+    } catch (e) {}
+    try {
+      localStorage.setItem(storageId, JSON.stringify(customSubjects));
+    } catch (e) {}
   }
 
   async loadStudents() {
@@ -121,6 +200,9 @@ export class ClassRosterView extends BaseView {
       return;
     }
 
+    this.ensureSeatingGridInitialized();
+    this.syncSeatingGridWithCurrentStudents();
+
     const capacityPerDesk = this.deskType === 'DOUBLE' ? 2 
       : (this.deskType === 'POD4' ? 4 
       : (this.deskType === 'POD6' ? 6 
@@ -138,27 +220,36 @@ export class ClassRosterView extends BaseView {
     // Re-assign official STT (1 -> N) & update seat location badges
     displayRoster.forEach((s, idx) => {
       s.stt = idx + 1;
-      if (this.seatingGrid) {
-        const slotIdx = this.seatingGrid.findIndex(st => st && st.id === s.id);
-        if (slotIdx >= 0) {
-          const deskIdx = Math.floor(slotIdx / capacityPerDesk);
-          s.seatRow = Math.floor(deskIdx / this.matrixCols) + 1;
-          s.seatCol = (deskIdx % this.matrixCols) + 1;
+      const slotIdx = this.findSeatSlotForStudent(s);
+      if (slotIdx >= 0) {
+        const deskIdx = Math.floor(slotIdx / capacityPerDesk);
+        s.seatRow = Math.floor(deskIdx / this.matrixCols) + 1;
+        s.seatCol = (deskIdx % this.matrixCols) + 1;
+        const subSlot = slotIdx % capacityPerDesk;
+        const seatLetter = String.fromCharCode(65 + subSlot);
+
+        if (this.deskType === 'SINGLE' || capacityPerDesk === 1) {
+          s.seatPosText = `Dãy ${s.seatCol} - Bàn ${s.seatRow}`;
         } else {
-          s.seatRow = null;
-          s.seatCol = null;
+          s.seatPosText = `Dãy ${s.seatCol} - Bàn ${s.seatRow} - Ghế ${seatLetter}`;
         }
+        s.seatLetter = seatLetter;
+      } else {
+        s.seatRow = null;
+        s.seatCol = null;
+        s.seatPosText = null;
+        s.seatLetter = null;
       }
     });
 
     tbody.innerHTML = displayRoster.map(s => {
       let seatBadge = `<span style="color: var(--text-muted); font-size: 10px;">(Chưa xếp bàn)</span>`;
-      if (s.seatRow && s.seatCol) {
-        seatBadge = `<span style="background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; white-space: nowrap;">📍 Dãy ${s.seatCol} - Bàn ${s.seatRow}</span>`;
+      if (s.seatPosText) {
+        seatBadge = `<span style="background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); padding: 1px 6px; border-radius: 6px; font-weight: 700; font-size: 10px; white-space: nowrap;">📍 ${s.seatPosText}</span>`;
       }
 
       return `
-        <tr class="roster-row" data-id="${s.id}" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <tr class="roster-row" data-id="${s.id}" draggable="true" style="border-bottom: 1px solid rgba(255,255,255,0.06); cursor: grab;">
           <td style="font-weight: 700; color: var(--text-muted); text-align: center;">${s.stt}</td>
           <td>
             <div style="font-weight: 700; color: white; font-size: 13px;">${s.name}</div>
@@ -187,6 +278,105 @@ export class ClassRosterView extends BaseView {
     this.bindRowActions();
   }
 
+  openAssignStudentModal(slotIndex) {
+    let modal = document.getElementById('assign-student-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'assign-student-modal';
+      modal.className = 'modal-overlay';
+      modal.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center;';
+      modal.innerHTML = `
+        <div class="glass-card accent-purple modal-box" style="max-width: 480px; width: 92%; padding: 24px; border: 1.5px solid var(--accent-purple); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); background: #0f172a;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin: 0; color: #c084fc; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+              🪑 PHÂN CÔNG HỌC SINH VÀO GHẾ BÀN
+            </h3>
+            <button class="btn-secondary btn-sm" id="btn-close-assign-modal">✖</button>
+          </div>
+          <div id="assign-slot-info" style="font-size: 13px; color: #60a5fa; font-weight: 700; margin-bottom: 12px;"></div>
+          <div style="max-height: 320px; overflow-y: auto; padding-right: 4px;" id="assign-student-list"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-assign-modal').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    }
+
+    const capacityPerDesk = (this.deskType === 'DOUBLE' ? 2 : 1);
+    const deskIdx = Math.floor(slotIndex / capacityPerDesk);
+    const row = Math.floor(deskIdx / this.matrixCols) + 1;
+    const col = (deskIdx % this.matrixCols) + 1;
+
+    const subSlot = slotIndex % capacityPerDesk;
+    const seatLetter = String.fromCharCode(65 + subSlot);
+
+    modal.querySelector('#assign-slot-info').textContent = capacityPerDesk > 1 
+      ? `📍 Đang phân công cho: Dãy ${col} — Bàn ${row} — Ghế ${seatLetter}`
+      : `📍 Đang phân công cho: Dãy ${col} — Bàn ${row}`;
+
+    const assignedIds = new Set((this.seatingGrid || []).filter(Boolean).map(s => s.id));
+    const unassigned = this.students.filter(s => !assignedIds.has(s.id));
+    const assigned = this.students.filter(s => assignedIds.has(s.id));
+
+    const listContainer = modal.querySelector('#assign-student-list');
+    let html = '';
+
+    if (unassigned.length > 0) {
+      html += `<div style="font-size: 11px; font-weight: 800; color: #34d399; margin-bottom: 8px;">🟢 HỌC SINH CHƯA CÓ CHỖ NGỒI (${unassigned.length}):</div>`;
+      html += unassigned.map(s => `
+        <div class="assign-student-item glass-card" data-id="${s.id}" style="padding: 10px 14px; margin-bottom: 8px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          <div>
+            <strong style="color: white; font-size: 13px;">${s.stt}. ${s.name}</strong>
+            <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">${s.studentCode}</span>
+          </div>
+          <button class="btn-primary-glow btn-sm" style="padding: 3px 10px; font-size: 11px; font-weight: 800;">➕ Xếp Vào Ghế</button>
+        </div>
+      `).join('');
+    }
+
+    if (assigned.length > 0) {
+      html += `<div style="font-size: 11px; font-weight: 800; color: #fbbf24; margin: 14px 0 8px 0;">🟡 HỌC SINH ĐÃ XẾP BÀN KHÁC (${assigned.length}):</div>`;
+      html += assigned.map(s => `
+        <div class="assign-student-item glass-card" data-id="${s.id}" style="padding: 8px 12px; margin-bottom: 6px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          <div>
+            <span style="color: white; font-size: 12px; font-weight: 700;">${s.stt}. ${s.name}</span>
+            <span style="font-size: 10px; color: #c084fc; margin-left: 6px;">📍 ${s.seatPosText || 'Đã xếp'}</span>
+          </div>
+          <button class="btn-secondary btn-sm" style="padding: 2px 8px; font-size: 10px; font-weight: 700;">🔄 Chuyển Sang Đây</button>
+        </div>
+      `).join('');
+    }
+
+    listContainer.innerHTML = html;
+
+    listContainer.querySelectorAll('.assign-student-item').forEach(item => {
+      item.addEventListener('click', async () => {
+        const studentId = item.getAttribute('data-id');
+        const targetStudent = this.students.find(s => s.id === studentId);
+        if (targetStudent) {
+          if (!this.seatingGrid) {
+            const totalSlots = this.matrixCols * this.matrixRows * (this.deskType === 'DOUBLE' ? 2 : 1);
+            this.seatingGrid = Array(totalSlots).fill(null);
+          }
+          const oldIdx = this.seatingGrid.findIndex(st => st && st.id === studentId);
+          if (oldIdx >= 0) this.seatingGrid[oldIdx] = null;
+          this.seatingGrid[slotIndex] = targetStudent;
+
+          modal.style.display = 'none';
+          audioSynthesizer.playChime();
+          this.renderSeatingChartMatrix();
+          this.renderRosterTable();
+          await this.saveCurrentSemesterSeating();
+          this.showToast(`Đã xếp em ${targetStudent.name} vào Dãy ${col} — Bàn ${row} thành công!`, 'success');
+        }
+      });
+    });
+
+    modal.style.display = 'flex';
+  }
+
   bindRowActions() {
     const tbody = document.getElementById('roster-table-body');
     if (!tbody) return;
@@ -209,7 +399,7 @@ export class ClassRosterView extends BaseView {
     document.getElementById('drawer-student-name').textContent = s.name;
     document.getElementById('drawer-student-code').textContent = `Mã HS: ${s.studentCode} • Lớp ${this.currentClass}`;
     document.getElementById('drawer-total-stars').textContent = `⭐ ${s.stars} Sao`;
-    document.getElementById('drawer-seat-pos').textContent = `Dãy ${s.seatCol} — Bàn ${s.seatRow}`;
+    document.getElementById('drawer-seat-pos').textContent = s.seatRow && s.seatCol ? `Dãy ${s.seatCol} — Bàn ${s.seatRow}` : '(Chưa xếp bàn)';
     document.getElementById('drawer-parent-phone').textContent = s.parentPhone || '0912.345.678';
     document.getElementById('drawer-gender').textContent = s.gender || 'Nam';
     
@@ -343,9 +533,12 @@ export class ClassRosterView extends BaseView {
         const slotIndex = i * capacityPerDesk + sub;
         const student = this.seatingGrid[slotIndex];
 
+        const seatLetter = String.fromCharCode(65 + sub);
+
         if (student) {
           seatItems.push(`
-            <div class="draggable-student glass-card" draggable="true" data-slot="${slotIndex}" data-id="${student.id}" style="padding: 6px 4px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); cursor: grab; user-select: none;">
+            <div class="draggable-student glass-card" draggable="true" data-slot="${slotIndex}" data-id="${student.id}" style="position: relative; padding: 6px 4px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); cursor: grab; user-select: none;">
+              ${capacityPerDesk > 1 ? `<span style="position: absolute; top: 2px; right: 3px; font-size: 8px; font-weight: 800; color: #60a5fa; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); padding: 0 3px; border-radius: 3px;">${seatLetter}</span>` : ''}
               <div class="avatar-circle" style="width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 3px auto; background: ${student.gender === 'Nam' ? 'rgba(59, 130, 246, 0.25)' : 'rgba(236, 72, 153, 0.25)'}; color: ${student.gender === 'Nam' ? '#60a5fa' : '#f472b6'}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; border: 1.5px solid currentColor;">
                 ${student.name.split(' ').pop()?.charAt(0) || 'H'}
               </div>
@@ -370,7 +563,8 @@ export class ClassRosterView extends BaseView {
           `);
         } else {
           seatItems.push(`
-            <div class="empty-seat-slot glass-card" data-slot="${slotIndex}" style="padding: 14px 0; color: var(--text-muted); font-size: 9px; border: 1px dashed rgba(255,255,255,0.25); border-radius: 6px; user-select: none; cursor: pointer; text-align: center;">
+            <div class="empty-seat-slot glass-card" data-slot="${slotIndex}" style="position: relative; padding: 14px 0; color: var(--text-muted); font-size: 9px; border: 1px dashed rgba(255,255,255,0.25); border-radius: 6px; user-select: none; cursor: pointer; text-align: center;">
+              ${capacityPerDesk > 1 ? `<span style="position: absolute; top: 2px; right: 3px; font-size: 8px; font-weight: 800; color: #60a5fa; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); padding: 0 3px; border-radius: 3px;">${seatLetter}</span>` : ''}
               (Trống)
             </div>
           `);
@@ -400,6 +594,20 @@ export class ClassRosterView extends BaseView {
 
     let srcSlotIdx = null;
 
+    // Enable dragging from Roster Table Rows
+    document.querySelectorAll('.roster-row[draggable="true"]').forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        const studentId = row.getAttribute('data-id');
+        this.draggedStudentId = studentId;
+        e.dataTransfer.setData('text/student-id', studentId);
+        row.style.opacity = '0.5';
+      });
+
+      row.addEventListener('dragend', () => {
+        row.style.opacity = '1';
+      });
+    });
+
     grid.querySelectorAll('.draggable-student').forEach(elem => {
       elem.addEventListener('dragstart', (e) => {
         srcSlotIdx = parseInt(elem.getAttribute('data-slot') || '0', 10);
@@ -426,13 +634,34 @@ export class ClassRosterView extends BaseView {
         elem.style.borderColor = '';
 
         const targetSlotIdx = parseInt(elem.getAttribute('data-slot') || '0', 10);
+        const rosterStudentId = e.dataTransfer.getData('text/student-id') || this.draggedStudentId;
+
+        if (rosterStudentId && srcSlotIdx === null) {
+          const studentToAssign = this.students.find(s => s.id === rosterStudentId);
+          if (studentToAssign) {
+            if (!this.seatingGrid) {
+              const totalSlots = this.matrixCols * this.matrixRows * (this.deskType === 'DOUBLE' ? 2 : 1);
+              this.seatingGrid = Array(totalSlots).fill(null);
+            }
+            const oldIdx = this.seatingGrid.findIndex(s => s && s.id === studentToAssign.id);
+            if (oldIdx >= 0) this.seatingGrid[oldIdx] = null;
+
+            this.seatingGrid[targetSlotIdx] = studentToAssign;
+            audioSynthesizer.playChime();
+            this.renderSeatingChartMatrix();
+            this.renderRosterTable();
+            await this.saveCurrentSemesterSeating();
+            this.showToast(`Đã xếp em ${studentToAssign.name} vào bàn thành công!`, 'success');
+            return;
+          }
+        }
+
         if (srcSlotIdx !== null && srcSlotIdx !== targetSlotIdx) {
           // Swap student A and B between slots
           const temp = this.seatingGrid[srcSlotIdx];
           this.seatingGrid[srcSlotIdx] = this.seatingGrid[targetSlotIdx];
           this.seatingGrid[targetSlotIdx] = temp;
 
-          this.students = this.seatingGrid.filter(s => s !== null);
           audioSynthesizer.playChime();
           this.renderSeatingChartMatrix();
           this.renderRosterTable();
@@ -444,8 +673,13 @@ export class ClassRosterView extends BaseView {
       });
     });
 
-    // Drop handler for Empty Seat Slots
+    // Drop handler & Click-to-Assign for Empty Seat Slots
     grid.querySelectorAll('.empty-seat-slot').forEach(elem => {
+      elem.addEventListener('click', () => {
+        const slotIdx = parseInt(elem.getAttribute('data-slot') || '0', 10);
+        this.openAssignStudentModal(slotIdx);
+      });
+
       elem.addEventListener('dragover', (e) => {
         e.preventDefault();
         elem.style.borderColor = '#10b981';
@@ -463,13 +697,34 @@ export class ClassRosterView extends BaseView {
         elem.style.background = '';
 
         const targetSlotIdx = parseInt(elem.getAttribute('data-slot') || '0', 10);
+        const rosterStudentId = e.dataTransfer.getData('text/student-id') || this.draggedStudentId;
+
+        if (rosterStudentId && srcSlotIdx === null) {
+          const studentToAssign = this.students.find(s => s.id === rosterStudentId);
+          if (studentToAssign) {
+            if (!this.seatingGrid) {
+              const totalSlots = this.matrixCols * this.matrixRows * (this.deskType === 'DOUBLE' ? 2 : 1);
+              this.seatingGrid = Array(totalSlots).fill(null);
+            }
+            const oldIdx = this.seatingGrid.findIndex(s => s && s.id === studentToAssign.id);
+            if (oldIdx >= 0) this.seatingGrid[oldIdx] = null;
+
+            this.seatingGrid[targetSlotIdx] = studentToAssign;
+            audioSynthesizer.playChime();
+            this.renderSeatingChartMatrix();
+            this.renderRosterTable();
+            await this.saveCurrentSemesterSeating();
+            this.showToast(`Đã xếp em ${studentToAssign.name} vào bàn thành công!`, 'success');
+            return;
+          }
+        }
+
         if (srcSlotIdx !== null && srcSlotIdx !== targetSlotIdx) {
           // Move student from srcSlotIdx to targetSlotIdx empty slot
           const movedStudent = this.seatingGrid[srcSlotIdx];
           this.seatingGrid[targetSlotIdx] = movedStudent;
           this.seatingGrid[srcSlotIdx] = null;
 
-          this.students = this.seatingGrid.filter(s => s !== null);
           audioSynthesizer.playChime();
           this.renderSeatingChartMatrix();
           this.renderRosterTable();
@@ -502,8 +757,8 @@ export class ClassRosterView extends BaseView {
     await this.saveCurrentSemesterSeating();
   }
 
-  getSeatingStorageKey(semester = this.currentSemester, classId = this.currentClass) {
-    return `SEATING_CONFIG_${semester}_CLASS_${classId}`;
+  getSeatingStorageKey(semester = this.currentSemester, classId = this.currentClass, subject = this.currentSubject) {
+    return `SEATING_CONFIG_${semester}_CLASS_${classId}_SUBJ_${subject}`;
   }
 
   async saveCurrentSemesterSeating() {
@@ -512,7 +767,8 @@ export class ClassRosterView extends BaseView {
       matrixCols: this.matrixCols,
       matrixRows: this.matrixRows,
       deskType: this.deskType,
-      seatingGrid: this.seatingGrid
+      seatingGrid: this.seatingGrid,
+      isSaved: true
     };
     try {
       if (STORAGE_STORES.SETTINGS) {
@@ -524,9 +780,53 @@ export class ClassRosterView extends BaseView {
     } catch (e) {}
   }
 
+  async getSavedSubjectsForCurrentClass() {
+    const subjectsMap = {
+      'CHUNG': '📚 Môn Học Chính (Mặc định)',
+      'TIENG_ANH': '🇬🇧 Môn Tiếng Anh (Phòng Lab)',
+      'TIN_HOC': '💻 Môn Tin Học (Phòng Máy)',
+      'VAT_LY': '⚡ Môn Vật Lý (Phòng Thí Nghiệm)',
+      'HOA_HOC': '🧪 Môn Hóa Học (Phòng Thí Nghiệm)',
+      'SINH_HOC': '🧬 Môn Sinh Học (Phòng Thực Hành)',
+      'TOAN': '📐 Môn Toán Học',
+      'VAN': '📖 Môn Ngữ Văn',
+      'SU_DIA': '🌍 Môn Lịch Sử & Địa Lý',
+      'AM_NHAC': '🎨 Môn Âm Nhạc / Mỹ Thuật'
+    };
+
+    const saved = [];
+
+    for (const [key, name] of Object.entries(subjectsMap)) {
+      if (key === this.currentSubject) continue;
+      const sKey = this.getSeatingStorageKey(this.currentSemester, this.currentClass, key);
+      let cfg = null;
+      try {
+        const rec = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, sKey);
+        if (rec && rec.value) cfg = rec.value;
+      } catch (e) {}
+      if (!cfg) {
+        try {
+          const raw = localStorage.getItem(sKey);
+          if (raw) cfg = JSON.parse(raw);
+        } catch (e) {}
+      }
+
+      if (cfg && cfg.isSaved) {
+        saved.push({ key, name });
+      }
+    }
+
+    if (!saved.some(s => s.key === 'CHUNG') && this.currentSubject !== 'CHUNG') {
+      saved.unshift({ key: 'CHUNG', name: '📚 Môn Học Chính (Mặc định)' });
+    }
+
+    return saved;
+  }
+
   async loadCurrentSemesterSeating() {
     const key = this.getSeatingStorageKey();
     const banner = document.getElementById('copy-semester-banner');
+    const overlay = document.getElementById('seating-preview-overlay');
 
     let cfg = null;
     try {
@@ -541,44 +841,216 @@ export class ClassRosterView extends BaseView {
       } catch (e) {}
     }
 
-    if (cfg) {
+    const reCopyBtn = document.getElementById('btn-re-copy-subject');
+    if (reCopyBtn) {
+      reCopyBtn.style.display = this.currentSubject !== 'HOMEROOM' ? 'inline-flex' : 'none';
+    }
+
+    if (cfg && cfg.isSaved) {
       if (banner) banner.style.display = 'none';
+      if (overlay) overlay.style.display = 'none';
       this.matrixCols = cfg.matrixCols || 4;
       this.matrixRows = cfg.matrixRows || 6;
       this.deskType = cfg.deskType || 'DOUBLE';
       this.seatingGrid = cfg.seatingGrid || null;
     } else {
-      // Reset grid for empty semester
-      this.seatingGrid = null;
-      if (this.currentSemester === '2026_HK2') {
-        let prevCfg = null;
-        const prevKey = this.getSeatingStorageKey('2026_HK1');
+      // Unsaved subject/semester -> Load preview grid from selected source & display overlay
+      let promptMsg = '';
+      let btnLabel = '';
+
+      if (this.currentSubject !== 'HOMEROOM') {
+        promptMsg = `Chưa có sơ đồ chỗ ngồi riêng cho bộ môn này của Lớp ${this.currentClass}.`;
+        btnLabel = '📋 Sao Chép Làm Sơ Đồ Chính';
+
+        const savedSubjects = await this.getSavedSubjectsForCurrentClass();
+        const sourceSelect = document.getElementById('overlay-source-subject-select');
+        if (sourceSelect) {
+          sourceSelect.innerHTML = savedSubjects.map(s => `
+            <option value="${s.key}">${s.name}</option>
+          `).join('');
+
+          sourceSelect.onchange = async (e) => {
+            const srcKey = e.target.value;
+            const sourceStorageKey = this.getSeatingStorageKey(this.currentSemester, this.currentClass, srcKey);
+            let srcCfg = null;
+            try {
+              const rec = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, sourceStorageKey);
+              if (rec && rec.value) srcCfg = rec.value;
+            } catch (err) {}
+            if (!srcCfg) {
+              try {
+                const raw = localStorage.getItem(sourceStorageKey);
+                if (raw) srcCfg = JSON.parse(raw);
+              } catch (err) {}
+            }
+            if (srcCfg) {
+              this.matrixCols = srcCfg.matrixCols || 4;
+              this.matrixRows = srcCfg.matrixRows || 6;
+              this.deskType = srcCfg.deskType || 'DOUBLE';
+              this.seatingGrid = srcCfg.seatingGrid ? JSON.parse(JSON.stringify(srcCfg.seatingGrid)) : null;
+            }
+            this.syncSeatingGridWithCurrentStudents();
+            this.renderSeatingChartMatrix();
+            this.renderRosterTable();
+          };
+        }
+
+        const selectedSourceKey = sourceSelect && sourceSelect.value ? sourceSelect.value : 'HOMEROOM';
+        const chungKey = this.getSeatingStorageKey(this.currentSemester, this.currentClass, selectedSourceKey);
+        let chungCfg = null;
         try {
-          const prevRecord = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, prevKey);
-          if (prevRecord && prevRecord.value) prevCfg = prevRecord.value;
+          const rec = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, chungKey);
+          if (rec && rec.value) chungCfg = rec.value;
         } catch (e) {}
-        if (!prevCfg) {
+        if (!chungCfg) {
           try {
-            const raw = localStorage.getItem(prevKey);
-            if (raw) prevCfg = JSON.parse(raw);
+            const raw = localStorage.getItem(chungKey);
+            if (raw) chungCfg = JSON.parse(raw);
           } catch (e) {}
         }
-
-        if (prevCfg && banner) {
-          document.getElementById('banner-semester-name').textContent = 'Học Kỳ II';
-          document.getElementById('banner-class-name').textContent = this.currentClass;
-          banner.style.display = 'flex';
-        } else if (banner) {
-          banner.style.display = 'none';
+        if (chungCfg) {
+          this.matrixCols = chungCfg.matrixCols || 4;
+          this.matrixRows = chungCfg.matrixRows || 6;
+          this.deskType = chungCfg.deskType || 'DOUBLE';
+          this.seatingGrid = chungCfg.seatingGrid ? JSON.parse(JSON.stringify(chungCfg.seatingGrid)) : null;
+        } else {
+          this.seatingGrid = null;
         }
-      } else if (banner) {
-        banner.style.display = 'none';
+
+        if (overlay) {
+          const clsName = document.getElementById('overlay-class-name');
+          if (clsName) clsName.textContent = this.currentClass;
+          overlay.style.display = 'flex';
+        }
+      } else if (this.currentSemester === '2026_HK2') {
+        promptMsg = `Chưa phát sinh sơ đồ chỗ ngồi cho Học Kỳ II - Lớp ${this.currentClass}.`;
+        btnLabel = '📋 Sao Chép Sơ Đồ Từ Học Kỳ I';
+        this.seatingGrid = null;
+        if (overlay) overlay.style.display = 'none';
+      } else {
+        if (banner) banner.style.display = 'none';
+        if (overlay) overlay.style.display = 'none';
+        return;
+      }
+
+      if (banner) {
+        document.getElementById('banner-semester-name').textContent = promptMsg;
+        const copyBtn = document.getElementById('btn-copy-from-hk1');
+        if (copyBtn) copyBtn.textContent = btnLabel;
+        banner.style.display = 'flex';
       }
     }
+    this.syncSeatingGridWithCurrentStudents();
   }
 
-  async copySeatingFromPreviousSemester() {
-    const prevKey = this.getSeatingStorageKey('2026_HK1');
+  findSeatSlotForStudent(s) {
+    if (!this.seatingGrid || !s) return -1;
+
+    // 1. Strict ID match
+    if (s.id) {
+      const idx = this.seatingGrid.findIndex(st => st && st.id && String(st.id) === String(s.id));
+      if (idx >= 0) return idx;
+    }
+
+    // 2. Strict Student Code match
+    if (s.studentCode) {
+      const idx = this.seatingGrid.findIndex(st => st && st.studentCode && String(st.studentCode) === String(s.studentCode));
+      if (idx >= 0) return idx;
+    }
+
+    // 3. Normalized Full Name match
+    if (s.name) {
+      const idx = this.seatingGrid.findIndex(st => st && st.name && st.name.trim().toLowerCase() === s.name.trim().toLowerCase());
+      if (idx >= 0) return idx;
+    }
+
+    return -1;
+  }
+
+  syncSeatingGridWithCurrentStudents() {
+    if (!this.seatingGrid || !Array.isArray(this.seatingGrid) || !this.students || this.students.length === 0) return;
+
+    this.seatingGrid = this.seatingGrid.map(st => {
+      if (!st) return null;
+
+      // 1. Strict ID Match
+      if (st.id) {
+        const byId = this.students.find(s => s.id && String(s.id) === String(st.id));
+        if (byId) return byId;
+      }
+
+      // 2. Strict Student Code Match
+      if (st.studentCode) {
+        const byCode = this.students.find(s => s.studentCode && String(s.studentCode) === String(st.studentCode));
+        if (byCode) return byCode;
+      }
+
+      // 3. Normalized Full Name Match
+      if (st.name) {
+        const byName = this.students.find(s => s.name && s.name.trim().toLowerCase() === st.name.trim().toLowerCase());
+        if (byName) return byName;
+      }
+
+      return null;
+    });
+  }
+
+  showToast(message, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'glass-card';
+    toast.style.cssText = `
+      pointer-events: auto;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid ${type === 'success' ? '#10b981' : type === 'info' ? '#f59e0b' : '#3b82f6'};
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 280px;
+      max-width: 440px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    `;
+
+    const icon = type === 'success' ? '✔' : type === 'info' ? '🧹' : '💾';
+    toast.innerHTML = `<span style="font-size: 18px; color: ${type === 'success' ? '#34d399' : type === 'info' ? '#fbbf24' : '#60a5fa'};">${icon}</span> <span>${message}</span>`;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+      toast.style.transform = 'translateY(-10px)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  async copySeatingFromPreviousSemester(sourceSubjectKey = null) {
+    let prevKey = this.getSeatingStorageKey('2026_HK1');
+    if (sourceSubjectKey) {
+      prevKey = this.getSeatingStorageKey(this.currentSemester, this.currentClass, sourceSubjectKey);
+    } else if (this.currentSubject !== 'HOMEROOM') {
+      prevKey = this.getSeatingStorageKey(this.currentSemester, this.currentClass, 'HOMEROOM');
+    }
+
     let prevCfg = null;
     try {
       const prevRecord = await localFirstAdapter.get(STORAGE_STORES.SETTINGS, prevKey);
@@ -591,21 +1063,123 @@ export class ClassRosterView extends BaseView {
       } catch (e) {}
     }
 
+    if (!prevCfg) {
+      prevCfg = {
+        matrixCols: 4,
+        matrixRows: 6,
+        deskType: 'DOUBLE',
+        seatingGrid: this.students.slice(0, 48)
+      };
+    }
+
     if (prevCfg) {
-      this.matrixCols = prevCfg.matrixCols;
-      this.matrixRows = prevCfg.matrixRows;
-      this.deskType = prevCfg.deskType;
+      this.matrixCols = prevCfg.matrixCols || 4;
+      this.matrixRows = prevCfg.matrixRows || 6;
+      this.deskType = prevCfg.deskType || 'DOUBLE';
       this.seatingGrid = prevCfg.seatingGrid ? JSON.parse(JSON.stringify(prevCfg.seatingGrid)) : null;
 
       await this.saveCurrentSemesterSeating();
-      document.getElementById('copy-semester-banner').style.display = 'none';
+
+      const banner = document.getElementById('copy-semester-banner');
+      if (banner) banner.style.display = 'none';
+
+      const overlay = document.getElementById('seating-preview-overlay');
+      if (overlay) overlay.style.display = 'none';
+
       this.renderSeatingChartMatrix();
+      this.renderRosterTable();
       audioSynthesizer.playChime();
-      alert(`✔ [ĐÃ SAO CHÉP SƠ ĐỒ CHỖ NGỒI]\nĐã sao chép toàn bộ vị trí chỗ ngồi Lớp ${this.currentClass} từ Học Kỳ I sang Học Kỳ II thành công!`);
+      this.showToast(`Đã sao chép toàn bộ vị trí chỗ ngồi Lớp ${this.currentClass} làm sơ đồ chính cho bộ môn thành công!`, 'success');
     }
   }
 
+  async resetToFreshEmptySeating() {
+    const totalSlots = this.matrixCols * this.matrixRows * (this.deskType === 'DOUBLE' ? 2 : 1);
+    this.seatingGrid = Array(totalSlots).fill(null);
+    await this.saveCurrentSemesterSeating();
+
+    const banner = document.getElementById('copy-semester-banner');
+    if (banner) banner.style.display = 'none';
+
+    const overlay = document.getElementById('seating-preview-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    this.renderSeatingChartMatrix();
+    this.renderRosterTable();
+    audioSynthesizer.playChime();
+    this.showToast(`Đã tạo sơ đồ bàn trống cho bộ môn thành công! Thầy cô có thể kéo thả học sinh tùy thích.`, 'info');
+  }
+
+  openConfirmModal(title, message, onConfirm) {
+    let modal = document.getElementById('glass-confirm-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'glass-confirm-modal';
+      modal.className = 'modal-overlay';
+      modal.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center;';
+      modal.innerHTML = `
+        <div class="glass-card accent-purple modal-box" style="max-width: 440px; width: 90%; padding: 24px; border: 1.5px solid var(--accent-purple); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); background: #0f172a; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 8px;">📋</div>
+          <h3 id="confirm-modal-title" style="margin: 0 0 8px 0; color: #60a5fa; font-size: 16px; font-weight: 800;"></h3>
+          <p id="confirm-modal-msg" style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 13px; line-height: 1.5;"></p>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button class="btn-secondary btn-sm" id="btn-cancel-glass-confirm" style="padding: 8px 18px; font-weight: 700;">✖ Hủy Bỏ</button>
+            <button class="btn-primary-glow btn-sm" id="btn-ok-glass-confirm" style="padding: 8px 20px; font-weight: 800;">✔ Đồng Ý Sao Chép</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-cancel-glass-confirm').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    }
+
+    modal.querySelector('#confirm-modal-title').textContent = title;
+    modal.querySelector('#confirm-modal-msg').textContent = message;
+
+    const okBtn = modal.querySelector('#btn-ok-glass-confirm');
+    okBtn.onclick = async () => {
+      modal.style.display = 'none';
+      if (onConfirm) await onConfirm();
+    };
+
+    modal.style.display = 'flex';
+  }
+
   bindEvents() {
+    if (this.eventsBound) return;
+    this.eventsBound = true;
+
+    // Subject Selector Switcher (Multi-subject Isolated Seating Chart)
+    const subjectSelect = document.getElementById('select-seating-subject');
+    if (subjectSelect) {
+      subjectSelect.addEventListener('change', async (e) => {
+        let val = e.target.value;
+        if (val === 'ADD_CUSTOM_SUBJECT') {
+          const customName = prompt('Nhập Tên Bộ Môn / Phòng Học Mới (Ví dụ: Phòng Thí Nghiệm Hóa 2, Phòng Đa Năng...):');
+          if (customName && customName.trim()) {
+            val = `CUSTOM_${Date.now()}`;
+            const displayName = `📖 Môn ${customName.trim()}`;
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = displayName;
+            opt.selected = true;
+            subjectSelect.insertBefore(opt, subjectSelect.lastElementChild);
+            await this.saveCustomSubject(val, displayName);
+          } else {
+            subjectSelect.value = this.currentSubject;
+            return;
+          }
+        }
+        this.currentSubject = val;
+        audioSynthesizer.playChime();
+        await this.loadCurrentSemesterSeating();
+        this.renderRosterTable();
+        this.renderSeatingChartMatrix();
+      });
+    }
+
     // Academic Semester Selector Switcher
     document.getElementById('select-academic-semester')?.addEventListener('change', async (e) => {
       await this.saveCurrentSemesterSeating();
@@ -618,9 +1192,65 @@ export class ClassRosterView extends BaseView {
     });
 
     // Copy Seating Chart from HK1 Action
-    document.getElementById('btn-copy-from-hk1')?.addEventListener('click', async () => {
-      await this.copySeatingFromPreviousSemester();
-    });
+    const copyHk1Btn = document.getElementById('btn-copy-from-hk1');
+    if (copyHk1Btn) {
+      copyHk1Btn.onclick = async () => {
+        await this.copySeatingFromPreviousSemester();
+      };
+    }
+
+    // Reset Fresh Seating Chart Action for New Subject
+    const resetFreshBtn = document.getElementById('btn-reset-fresh-seating');
+    if (resetFreshBtn) {
+      resetFreshBtn.onclick = async () => {
+        await this.resetToFreshEmptySeating();
+      };
+    }
+
+    // Overlay Action Buttons
+    const cancelSubjectSwitch = async () => {
+      const subjSel = document.getElementById('select-seating-subject');
+      if (subjSel) subjSel.value = 'HOMEROOM';
+      this.currentSubject = 'HOMEROOM';
+      audioSynthesizer.playChime();
+      await this.loadCurrentSemesterSeating();
+      this.renderRosterTable();
+      this.renderSeatingChartMatrix();
+    };
+
+    const overlayCancelBtn = document.getElementById('overlay-btn-cancel');
+    if (overlayCancelBtn) overlayCancelBtn.onclick = cancelSubjectSwitch;
+
+    const overlayCancelTopBtn = document.getElementById('overlay-btn-cancel-top');
+    if (overlayCancelTopBtn) overlayCancelTopBtn.onclick = cancelSubjectSwitch;
+
+    const overlayCopyBtn = document.getElementById('overlay-btn-copy');
+    if (overlayCopyBtn) {
+      overlayCopyBtn.onclick = async () => {
+        await this.copySeatingFromPreviousSemester();
+      };
+    }
+
+    const overlayFreshBtn = document.getElementById('overlay-btn-fresh');
+    if (overlayFreshBtn) {
+      overlayFreshBtn.onclick = async () => {
+        await this.resetToFreshEmptySeating();
+      };
+    }
+
+    // Re-copy Subject Seating Chart Action from Toolbar
+    const reCopyBtn = document.getElementById('btn-re-copy-subject');
+    if (reCopyBtn) {
+      reCopyBtn.onclick = () => {
+        this.openConfirmModal(
+          'SAO CHÉP SƠ ĐỒ CHỖ NGỒI MÔN HỌC',
+          'Bạn có muốn sao chép toàn bộ vị trí chỗ ngồi từ Môn Học Chung / Chủ Nhiệm đè lên sơ đồ bộ môn này không?',
+          async () => {
+            await this.copySeatingFromPreviousSemester();
+          }
+        );
+      };
+    }
 
     const presetSelect = document.getElementById('select-seating-preset');
     if (presetSelect) {
@@ -644,7 +1274,7 @@ export class ClassRosterView extends BaseView {
     document.getElementById('save-seating-chart-btn')?.addEventListener('click', async () => {
       await this.saveCurrentSemesterSeating();
       audioSynthesizer.playChime();
-      alert(`💾 [ĐÃ LƯU SƠ ĐỒ BÀN HỌC - ${this.currentSemester === '2026_HK1' ? 'HỌC KỲ I' : 'HỌC KỲ II'}]\nĐã lưu ma trận sơ đồ chỗ ngồi độc lập cho Lớp ${this.currentClass} (${this.currentSemester === '2026_HK1' ? 'Học Kỳ I' : 'Học Kỳ II'}) vào CSDL Offline!`);
+      this.showToast(`Đã lưu ma trận sơ đồ chỗ ngồi Lớp ${this.currentClass} vào CSDL Offline thành công!`, 'success');
     });
 
     document.querySelectorAll('.class-tab').forEach(tab => {
@@ -653,6 +1283,8 @@ export class ClassRosterView extends BaseView {
         document.querySelectorAll('.class-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         this.currentClass = tab.getAttribute('data-class') || '10A2';
+        this.currentSubject = 'CHUNG';
+        await this.renderSubjectSelectForGrade();
         audioSynthesizer.playChime();
         await this.loadStudents();
         await this.loadCurrentSemesterSeating();

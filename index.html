@@ -752,7 +752,6 @@
               </div>
               <div class="header-actions" style="display: flex; gap: 10px;">
                 <button class="btn-secondary" id="import-student-excel-btn">📥 Import Excel Danh Sách Lớp</button>
-                <button class="btn-primary" id="save-seating-chart-btn">💾 Lưu Sơ Đồ Bàn Học</button>
               </div>
             </div>
 
@@ -775,21 +774,18 @@
               </div>
             </div>
 
-            <!-- COPY PREVIOUS SEMESTER SEATING BANNER -->
-            <div class="glass-card" id="copy-semester-banner" style="display: none; padding: 10px 16px; margin-bottom: 16px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; border-radius: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-              <div style="font-size: 13px; color: white; font-weight: 700;">
-                💡 Chưa phát sinh sơ đồ chỗ ngồi riêng cho <span id="banner-semester-name" style="color: #60a5fa;">Học Kỳ II</span> - Lớp <span id="banner-class-name" style="color: #fbbf24;">10A2</span>. Bạn có muốn sao chép từ Học kỳ trước sang không?
-              </div>
-              <button class="btn-primary-glow btn-sm" id="btn-copy-from-hk1" style="font-weight: 800; padding: 5px 14px;">
-                📋 Sao Chép Sơ Đồ Từ Học Kỳ I
-              </button>
-            </div>
 
-            <!-- SECTION 2: BỘ CHỌN MẪU SƠ ĐỒ BÀN HỌC (SEATING PRESET TOOLBAR) -->
+
+            <!-- SECTION 2: BỘ CHỌN MẪU SƠ ĐỒ BÀN HỌC & BỘ MÔN (SEATING PRESET & SUBJECT TOOLBAR) -->
             <div class="seating-layout-toolbar glass-card" style="padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); border-radius: 10px;">
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <label style="font-weight: 800; color: #c084fc; font-size: 13px; white-space: nowrap;">🪑 Chọn Mẫu Sơ Đồ Lớp Học:</label>
-                <select class="form-control" id="select-seating-preset" style="width: auto; min-width: 320px; background: rgba(0,0,0,0.6); color: white; font-weight: 700; border-color: var(--accent-purple);">
+                <label style="font-weight: 800; color: #c084fc; font-size: 13px; white-space: nowrap;">📖 Bộ Môn:</label>
+                <select class="form-control" id="select-seating-subject" style="width: auto; min-width: 240px; background: rgba(0,0,0,0.6); color: white; font-weight: 700; border-color: var(--accent-purple);">
+                  <!-- Populated dynamically via APP_CONFIG -->
+                </select>
+
+                <label style="font-weight: 800; color: #c084fc; font-size: 13px; white-space: nowrap;">🪑 Mẫu Sơ Đồ:</label>
+                <select class="form-control" id="select-seating-preset" style="width: auto; min-width: 280px; background: rgba(0,0,0,0.6); color: white; font-weight: 700; border-color: var(--accent-purple);">
                   <option value="PRESET_4X8" selected>🪑 Mẫu 1: Chuẩn THPT (4 Dãy x 8 Bàn — 42-48 HS)</option>
                   <option value="PRESET_2X6">🪑 Mẫu 2: Phòng Lab / Chuyên Dùng (2 Dãy Đôi x 6 Bàn)</option>
                   <option value="PRESET_3X7">🪑 Mẫu 3: Chuẩn THCS (3 Dãy x 7 Bàn — 35-40 HS)</option>
@@ -800,7 +796,10 @@
                 </button>
               </div>
 
-              <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn-secondary btn-sm" id="btn-re-copy-subject" title="Sao chép lại vị trí chỗ ngồi từ Môn Học Chung" style="display: none; color: #60a5fa; border-color: #3b82f6; font-weight: 700; padding: 6px 12px; white-space: nowrap;">
+                  📋 Sao Chép Từ Môn Chung
+                </button>
                 <button class="btn-primary-glow btn-sm" id="save-seating-chart-btn" style="font-weight: 800; padding: 6px 14px;">
                   💾 Lưu Sơ Đồ Bàn Học
                 </button>
@@ -808,8 +807,45 @@
             </div>
 
             <!-- SECTION 3: SƠ ĐỒ CHỖ NGỒI DRAG & DROP & BẢNG DANH SÁCH HỌC SINH (SPLIT VIEW WORKSPACE) -->
-            <div class="roster-body-grid" id="roster-split-wrapper" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; transition: all 0.3s ease;">
-              <!-- LEFT PANEL: SƠ ĐỒ CHỖ NGỒI -->
+            <div id="roster-workspace-container" style="position: relative;">
+              
+              <!-- FROSTED GLASS PREVIEW OVERLAY FOR UNSAVED SUBJECTS -->
+              <div id="seating-preview-overlay" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); z-index: 100; border-radius: 12px; border: 1.5px dashed #3b82f6; align-items: flex-start; justify-content: center; text-align: center; padding-top: 30px; transition: all 0.3s ease;">
+                <div class="glass-card" style="padding: 22px 28px; border-radius: 16px; background: rgba(15, 23, 42, 0.96); border: 1.5px solid #3b82f6; box-shadow: 0 20px 50px rgba(0,0,0,0.9); max-width: 600px; margin: 0 auto; position: relative;">
+                  <button id="overlay-btn-cancel-top" style="position: absolute; top: 12px; right: 14px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 4px;" title="Hủy bỏ & quay về Môn Học Chính">✖</button>
+                  <div style="font-size: 34px; margin-bottom: 4px;">🔍</div>
+                  <h3 style="margin: 0 0 6px 0; color: #60a5fa; font-size: 16px; font-weight: 800;">
+                    SƠ ĐỒ CHỖ NGỒI THAM KHẢO DỰ PHÒNG
+                  </h3>
+                  <p style="margin: 0 0 14px 0; color: var(--text-muted); font-size: 13px; line-height: 1.5;">
+                    Bộ môn này chưa có sơ đồ riêng cho Lớp <strong id="overlay-class-name" style="color: #fbbf24;">10A2</strong>. Bạn có thể chọn sao chép từ một bộ môn đã có sơ đồ hoặc tạo mới hoàn toàn:
+                  </p>
+
+                  <!-- DYNAMIC SOURCE SUBJECT COPY SELECTOR -->
+                  <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    <label style="font-size: 12px; font-weight: 700; color: #93c5fd; white-space: nowrap;">📋 Sao Chép Vị Trí Từ:</label>
+                    <select class="form-control" id="overlay-source-subject-select" style="width: auto; min-width: 240px; background: rgba(15, 23, 42, 0.9); color: #fbbf24; font-weight: 800; border-color: #3b82f6; font-size: 12px;">
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+
+                  <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-primary-glow btn-sm" id="overlay-btn-copy" style="padding: 8px 18px; font-size: 12px; font-weight: 800;">
+                      📋 Sao Chép Làm Sơ Đồ Chính
+                    </button>
+                    <button class="btn-secondary btn-sm" id="overlay-btn-fresh" style="padding: 8px 14px; font-size: 12px; color: #fbbf24; border-color: #f59e0b; font-weight: 700;">
+                      🧹 Xếp Sơ Đồ Mới Trống
+                    </button>
+                    <button class="btn-secondary btn-sm" id="overlay-btn-cancel" style="padding: 8px 14px; font-size: 12px; color: var(--text-muted); font-weight: 700;">
+                      ✖ Hủy & Quay Về Môn Chính
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SPLIT 50/50 WORKSPACE GRID WRAPPER -->
+              <div class="roster-body-grid" id="roster-split-wrapper" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; transition: all 0.3s ease;">
+                <!-- LEFT PANEL: SƠ ĐỒ CHỖ NGỒI -->
               <div class="seating-chart-box glass-card" id="panel-seating-box" style="padding: 16px; transition: all 0.3s ease;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 10px;">
@@ -869,6 +905,7 @@
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </section>
 
