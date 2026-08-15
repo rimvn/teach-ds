@@ -5,6 +5,7 @@
 
 import { store } from './core/Store.js';
 import { router } from './core/Router.js';
+import { ipcDispatcher } from './core/IPCDispatcher.js';
 
 // VIEW CONTROLLERS
 import { LaunchpadView } from './views/LaunchpadView.js';
@@ -56,9 +57,11 @@ class TeachDSApp {
   }
 
   bootstrap() {
-    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing!');
+    console.log('🚀 TeachDS Production Workspace initialized with Hash Routing & IPC Channel!');
     window.store = store;
+    window.ipcDispatcher = ipcDispatcher;
     store.benchmarkPerformance(10);
+    ipcDispatcher.benchmarkLatency(10);
     router.bootstrapInitialRoute(store.getState().currentView);
   }
 }
