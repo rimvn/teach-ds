@@ -36,7 +36,7 @@ gantt
 | **TASK-SP1-01** | Lập trình Reactive CoreStore Engine | 3 SP | `src/core/Store.js` | Viết class Store với Pub/Sub pattern. Hỗ trợ Immutable State Proxy. **DoD:** `store.dispatch()` mutates state trong `< 2ms`. |
 | **TASK-SP1-02** | Lập trình IPC Window Communication | 5 SP | `src/core/IPCDispatcher.js` | Kênh giao tiếp IPC MessageChannel giữa 2 cửa sổ Tivi View & Dock PC. **DoD:** Đẩy tin nhắn đồng bộ trong `< 10ms`. |
 | **TASK-SP1-03** | Lập trình LocalFirst Storage Adapter | 5 SP | `src/core/adapters/LocalFirstAdapter.js` | Tạo DB SQLite/IndexedDB WAL mode. Tạo bảng `students`, `lessons`, `sync_queue`. **DoD:** Ngắt Wifi vẫn đọc/ghi 100%. |
-| **TASK-SP1-04** | Lập trình Web Audio Synthesizer | 2 SP | `src/core/AudioSynthesizer.js` | Tạo tiếng chime "Ting ting" từ Web Audio Oscillator (880Hz -> 1760Hz). **DoD:** Âm thanh phát ra trong `< 10ms` khi gọi method. |
+| **TASK-SP1-04** | Lập trình Hybrid Audio Engine | 2 SP | `src/core/AudioSynthesizer.js` | Động cơ âm thanh lai: Ưu tiên phát file MP3/WAV vui nhộn (`star-chime.mp3`, `applause.mp3`, `fireworks.mp3`) + Web Audio Synthesizer dự phòng 0ms. **DoD:** Âm thanh phát sinh động trong `< 10ms`. |
 | **TASK-SP1-05** | Predefined Subject & Grade Taxonomy Seed | 2 SP | `src/config/appConfig.js` | Nạp mặc định Danh mục Môn GDPT 2018 (Cấp 1, 2, 3) & Khối K1-K12 Trường Liên Cấp. **DoD:** App vừa khởi chạy là có sẵn 100% môn học & khối lớp. |
 
 ---
